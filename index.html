@@ -810,7 +810,7 @@ function advise(run, name, price) {
   if (size) {
     const free = slotsTotal() - boardUsage(run).used;
     if (size > free) { best *= 0.9; reasons.push(`Нужно слотов: ${size}, свободно: ${Math.max(free, 0)} — придётся что-то убрать`); }
-  } else {
+  } else if (!eco.has(n)) {
     reasons.push('Размер неизвестен');
   }
   if (price != null && price > run.gold) { best *= 0.85; reasons.push(`Не хватает золота (${price} > ${run.gold})`); }
