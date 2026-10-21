@@ -569,6 +569,8 @@ th { font-family: var(--font-head); }
 const STORE_KEY = 'bazaarHelper.v2';
 const IMG_BASE = 'https://cdn.mobalytics.gg/assets/bazaar/images/cards_guid/';
 const STALE_DAYS = 45;
+// ?nostore — не читать и не писать localStorage (нужно для tests.html)
+const NO_STORE = new URLSearchParams(location.search).has('nostore');
 
 const DEFAULT_DATA = {
   version: 'S19-2026-10-12',
@@ -652,7 +654,9 @@ function validData(d) {
 function load() {
   const s = { data: null, run: null, history: [], customItems: [], theme: 'system', ui: { tab: 'run', dest: 'board', filter: 'all' } };
   let raw = null;
-  try { raw = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { raw = null; }
+  if (!NO_STORE) {
+    try { raw = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { raw = null; }
+  }
   if (raw && typeof raw === 'object') {
     if (validData(raw.data)) s.data = raw.data;
     if (raw.run && typeof raw.run === 'object') s.run = raw.run;
@@ -677,6 +681,7 @@ function fixRun(run, d) {
   return r;
 }
 function save() {
+  if (NO_STORE) return;
   try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) { /* хранилище недоступно — работаем без него */ }
 }
 function clampInt(v, min, max, def) {
@@ -1342,7 +1347,7 @@ $('import').addEventListener('change', async e => {
   toast('Импорт выполнен');
 });
 
-window.addEventListener('storage', e => { if (e.key === STORE_KEY) { S = load(); render(); } });
+window.addEventListener('storage', e => { if (e.key === STORE_KEY && !NO_STORE) { S = load(); render(); } });
 
 render();
 </script>

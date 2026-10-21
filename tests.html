@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bazaar Helper — тесты</title>
+<meta name="robots" content="noindex">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #ece6dc; --surface: #f7f3ec; --ink: #2a251f; --muted: #6a6155; --line: #d6ccbb;
+  --jade: #2d7a57; --madder: #a3392e; --jade-soft: #dcefe4; --madder-soft: #f5dcd7;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #1b1916; --surface: #262320; --ink: #ece5d9; --muted: #a69c8e; --line: #3d372f;
+    --jade: #63c193; --madder: #e57b6d; --jade-soft: #1f3a2d; --madder-soft: #42231f;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: var(--bg); color: var(--ink); font: 16px/1.45 "Segoe UI", system-ui, sans-serif; }
+main { max-width: 900px; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 4px; }
+.summary { padding: 10px 14px; border-radius: 8px; margin: 12px 0; font-weight: 700; }
+.summary.ok { background: var(--jade-soft); color: var(--jade); }
+.summary.fail { background: var(--madder-soft); color: var(--madder); }
+ol { padding-left: 22px; }
+li { padding: 4px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+li.ok::marker { color: var(--jade); }
+li.fail { color: var(--madder); }
+.muted { color: var(--muted); font-size: .9rem; }
+iframe { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bazaar Helper — проверка логики оценки</h1>
+  <p class="muted">Загружает <code>index.html?nostore</code> в скрытый фрейм и проверяет формулы из ТЗ. Сохранённый забег в этом браузере не затрагивается.</p>
+  <div id="summary" class="summary" role="status">Выполняется…</div>
+  <ol id="list"></ol>
+</main>
+<iframe id="app" src="index.html?nostore" title="Приложение для тестов"></iframe>
+<script>
+'use strict';
+const results = [];
+function check(name, ok, detail = '') { results.push({ name, ok: !!ok, detail }); }
+function eq(name, actual, expected) {
+  check(name, JSON.stringify(actual) === JSON.stringify(expected), `ожидалось ${JSON.stringify(expected)}, получено ${JSON.stringify(actual)}`);
+}
+function near(name, actual, expected, eps = 1e-9) {
+  check(name, Math.abs(actual - expected) < eps, `ожидалось ≈${expected}, получено ${actual}`);
+}
+
+document.getElementById('app').addEventListener('load', () => {
+  const w = document.getElementById('app').contentWindow;
+  const ev = code => w.eval(code);
+  const S = ev('S');
+  const DEFAULT_DATA = ev('DEFAULT_DATA');
+  const storedBefore = localStorage.getItem('bazaarHelper.v2');
+
+  // Задаёт забег (и при необходимости свои данные сборок) и возвращает его
+  function setRun(o = {}, data = null) {
+    S.data = data;
+    S.customItems = [];
+    S.run = ev('fixRun')(Object.assign({ hero: 'Pygmalien', day: 1, gold: 0, target: '', board: [], stash: [], offers: [] }, o), ev('data()'));
+    return S.run;
+  }
+  const advise = (o, name, price = null, data = null) => ev('advise')(setRun(o, data), name, price);
+  const progress = (o, id) => ev('matches')(setRun(o)).find(m => m.id === id).progress;
+  const hintText = o => ev('hints')(setRun(o)).map(h => h.text).join(' | ');
+
+  try {
+    // Прогресс архетипа
+    near('Pyg\'s Gym: пусто — 0%', progress({}, 'pygs_gym'), 0);
+    near('Pyg\'s Gym: ядро + 1 ключевой = 4/9', progress({ board: ["Pyg's Gym", 'Tusked Helm'] }, 'pygs_gym'), 4 / 9);
+    near('Стеш учитывается в прогрессе', progress({ stash: ['Tusked Helm'] }, 'pygs_gym'), 1 / 9);
+    near('Jabalian Drum засчитывается за ядро × 0.8', progress({ board: ['Jabalian Drum'] }, 'pygs_gym'), 3 * 0.8 / 9);
+
+    // Ценность предметов сборок
+    let a = advise({ day: 1 }, "Pyg's Gym");
+    eq('День 1, ядро с нуля: 50 «Зависит»', [a.score, a.verdict], [50, 'Зависит']);
+    a = advise({ day: 1 }, 'Tusked Helm');
+    eq('День 1, ключевой с нуля: пол 0.45 → 45', a.score, 45);
+    a = advise({ day: 5 }, 'Tusked Helm');
+    eq('День 5, ключевой с нуля: 38 «Пропустить»', [a.score, a.verdict], [38, 'Пропустить']);
+    a = advise({ day: 5, board: ["Pyg's Gym"] }, 'Haladie');
+    eq('Ключевой при прогрессе 1/3: 55', a.score, 55);
+    a = advise({ day: 5, board: ["Pyg's Gym"], target: 'vineyard' }, 'Haladie');
+    eq('Не цель пользователя × 0.6: 33', a.score, 33);
+    check('Причина «не ваша цель»', a.reasons.some(r => r.includes('не ваша цель')), a.reasons.join(' / '));
+    a = advise({ day: 9 }, 'Vineyard');
+    eq('День 9, прогресс < 25% × 0.75: 38', a.score, 38);
+    check('Причина «поздно начинать»', a.reasons.some(r => r.includes('поздно')), a.reasons.join(' / '));
+    a = advise({ day: 5, board: ["Pyg's Gym", 'Tusked Helm', 'Wrist Warrior', 'Piggles Launcher', 'Yo-Yo'] }, 'Haladie');
+    eq('Прогресс 7/9: 78 «Брать»', [a.score, a.verdict], [78, 'Брать']);
+
+    // Штрафы
+    a = advise({ day: 5, board: ["Pyg's Gym"] }, "Pyg's Gym");
+    eq('Уже есть × 0.6: 44', a.score, 44);
+    a = advise({ day: 1, board: ["Pyg's Gym", 'Vineyard', 'Private Hot Springs', 'Tusked Helm'] }, 'Haladie');
+    eq('Не влезает на доску × 0.9: 55', a.score, 55);
+    check('Причина про свободные слоты', a.reasons.some(r => r.includes('свободно: 0')), a.reasons.join(' / '));
+    a = advise({ day: 5, gold: 3, board: ["Pyg's Gym"] }, 'Haladie', 5);
+    eq('Цена больше золота × 0.85: 47', a.score, 47);
+    a = advise({ day: 5, gold: 5, board: ["Pyg's Gym"] }, 'Haladie', 5);
+    eq('Цена равна золоту — без штрафа: 55', a.score, 55);
+
+    // Экономика и неизвестные предметы
+    eq('Экономика, дни 1–4: 60', advise({ day: 3 }, 'ATM').score, 60);
+    eq('Экономика, дни 5–7: 45', advise({ day: 6 }, 'ATM').score, 45);
+    a = advise({ day: 8 }, 'ATM');
+    eq('Экономика, день 8+: 25', a.score, 25);
+    check('У экономики нет причины «Размер неизвестен»', !a.reasons.includes('Размер неизвестен'), a.reasons.join(' / '));
+    check('У Jabalian Drum есть причина «Размер неизвестен»', advise({}, 'Jabalian Drum').reasons.includes('Размер неизвестен'));
+    a = advise({}, 'Совсем Неизвестный Предмет');
+    eq('Неизвестный предмет: 20 «Пропустить»', [a.score, a.verdict], [20, 'Пропустить']);
+    check('Неизвестный: «оцените сами»', a.reasons.some(r => r.includes('оцените сами')));
+    eq('Регистр и пробелы в названии не важны', advise({ day: 1 }, '  pyg\'s   GYM ').score, 50);
+
+    // Бонус за несколько архетипов — на своих данных
+    const multi = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    multi.heroes.Pygmalien.archetypes[0].items.push({ name: 'Shared Thing', size: 'S', role: 'key' });
+    multi.heroes.Pygmalien.archetypes[1].items.push({ name: 'Shared Thing', size: 'S', role: 'key' });
+    a = advise({ day: 1 }, 'Shared Thing', null, multi);
+    eq('Предмет в двух сборках: +0.05 → 50', a.score, 50);
+    check('Причина «несколько сборок»', a.reasons.some(r => r.includes('несколько сборок')));
+
+    // Подсказки
+    check('Подсказка сменить направление (день 7, цель < 30%)',
+      hintText({ day: 7, target: 'private_hot_springs', board: ["Pyg's Gym"] }).includes('смене направления'));
+    check('Нет подсказки сменить направление на дне 6',
+      !hintText({ day: 6, target: 'private_hot_springs', board: ["Pyg's Gym"] }).includes('смене направления'));
+    check('Предупреждение о переполнении доски',
+      hintText({ board: ["Pyg's Gym", 'Vineyard', 'Private Hot Springs', 'Ice Cream Truck'] }).includes('12 слотов из 10'));
+    check('Предупреждение о неизвестном размере', hintText({ board: ['Jabalian Drum'] }).includes('Размер неизвестен'));
+    check('Лучшая сборка и чего не хватает',
+      hintText({ board: ['Vineyard', 'Golf Clubs'] }).includes('«Vineyard»') && hintText({ board: ['Vineyard', 'Golf Clubs'] }).includes('Textiles'));
+
+    // Мелочи интерфейса
+    eq('Инициалы Pyg\'s Gym → PG', ev('initials')("Pyg's Gym"), 'PG');
+    eq('Инициалы Yo-Yo → YY', ev('initials')('Yo-Yo'), 'YY');
+    setRun({ board: ['Haladie'], gold: 10 });
+    ev('snapshot')();
+    S.run.board = [];
+    S.run.gold = 2;
+    ev('undo')();
+    eq('Отмена возвращает доску и золото', [S.run.board, S.run.gold], [['Haladie'], 10]);
+
+    // Данные
+    const hero = DEFAULT_DATA.heroes.Pygmalien;
+    const all = hero.archetypes.flatMap(x => [...x.items, ...(x.alternatives || [])]);
+    check('У каждой сборки ровно одно ядро', hero.archetypes.every(x => x.items.filter(i => i.role === 'core').length === 1));
+    check('Размеры только S, M, L или null', all.every(i => i.size === null || ['S', 'M', 'L'].includes(i.size)));
+    check('У каждого предмета сборки есть картинка', all.every(i => i.img), all.filter(i => !i.img).map(i => i.name).join(', '));
+    check('replaces ссылается на предмет той же сборки', hero.archetypes.every(x => (x.alternatives || [])
+      .every(alt => !alt.replaces || x.items.some(i => i.name === alt.replaces))));
+  } catch (err) {
+    check('Тесты упали с ошибкой', false, String(err && err.stack || err));
+  }
+
+  check('localStorage не изменён тестами', localStorage.getItem('bazaarHelper.v2') === storedBefore);
+
+  const failed = results.filter(r => !r.ok);
+  const sum = document.getElementById('summary');
+  sum.textContent = failed.length ? `Провалено: ${failed.length} из ${results.length}` : `Все проверки пройдены: ${results.length}`;
+  sum.className = 'summary ' + (failed.length ? 'fail' : 'ok');
+  document.getElementById('list').innerHTML = results.map(r =>
+    `<li class="${r.ok ? 'ok' : 'fail'}">${r.ok ? '✓' : '✗'} ${escapeHtml(r.name)}${r.ok ? '' : `<br><span class="muted">${escapeHtml(r.detail)}</span>`}</li>`).join('');
+  document.title = (failed.length ? '✗ ' : '✓ ') + document.title;
+});
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+</script>
+</body>
+</html>
