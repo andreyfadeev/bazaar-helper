@@ -279,6 +279,7 @@ textarea { min-height: 64px; width: 100%; resize: vertical; }
 .v-none .score { color: var(--muted); }
 .reasons { margin: 0; padding-left: 18px; font-size: .9rem; color: var(--muted); }
 .reasons li.penalty { color: var(--madder); }
+.caveat { margin: -4px 0 10px; font-size: .84rem; color: var(--muted); }
 .more-reasons > summary { cursor: pointer; font-size: .85rem; color: var(--muted); padding-left: 18px; }
 .more-reasons > summary:hover { color: var(--ink); }
 .offer .acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
@@ -473,6 +474,7 @@ th { font-family: var(--font-head); }
         <section class="panel o-offers" aria-labelledby="h-offers">
           <div class="panel-head"><h2 id="h-offers">Торговец предлагает</h2>
             <button type="button" class="btn tiny" data-act="clear-offers">очистить</button></div>
+          <p class="caveat">Оценка не учитывает тир предмета (Bronze — Diamond) и энчанты: золотой или зачарованный предмет обычно сильнее, чем говорит число.</p>
           <div class="offers" id="offers"></div>
         </section>
 
