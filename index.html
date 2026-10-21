@@ -155,6 +155,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .stepper button:first-child { border-radius: 8px 0 0 8px; }
 .stepper button:last-child { border-radius: 0 8px 8px 0; }
 .stepper button:hover { background: rgba(255, 255, 255, .24); }
+.next-day {
+  min-height: 36px; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-weight: 700;
+  border: 1px solid #e2bd6a; background: #e2bd6a; color: #2a1c0c;
+}
+.next-day:hover { filter: brightness(1.08); }
 .stepper input { width: 54px; text-align: center; border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; -moz-appearance: textfield; }
 .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
@@ -401,6 +406,9 @@ th { font-family: var(--font-head); }
           <input id="gold" type="number" min="0" max="9999" inputmode="numeric" aria-labelledby="gold-l">
           <button type="button" data-act="step" data-k="gold" data-d="1" aria-label="Золота больше">+</button>
         </div>
+      </div>
+      <div class="field"><span aria-hidden="true">&nbsp;</span>
+        <button type="button" class="next-day" data-act="next-day" title="День +1, предложения торговца очищаются">Следующий день →</button>
       </div>
       <label class="field"><span>Цель сборки</span><select id="target"></select></label>
       <div class="field"><span id="theme-l">Тема</span>
@@ -1430,6 +1438,16 @@ document.addEventListener('click', e => {
       toast(`Куплено: ${o.name}` + (o.price != null ? `, −${o.price} золота` : ''), true);
       break;
     }
+    case 'next-day':
+      snapshot();
+      run.day = clampInt(run.day + 1, 1, 40, 1);
+      run.offers = [];
+      pricePending = null;
+      render();
+      toast(`День ${run.day}: торговец очищен — обновите золото`, true);
+      $('gold').focus();
+      $('gold').select();
+      break;
     case 'clear-offers':
       if (!run.offers.length) break;
       run.offers = []; render(); toast('Предложения торговца очищены', true); break;
