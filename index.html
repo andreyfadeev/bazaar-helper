@@ -368,11 +368,29 @@ th { font-family: var(--font-head); }
 .toast-undo { border: 0; background: transparent; color: var(--brass); font-weight: 700; cursor: pointer; padding: 4px 2px; text-decoration: underline; }
 .toast-undo[hidden] { display: none; }
 
+.nd-short { display: none; }
 @media (max-width: 520px) {
   body { font-size: 16px; }
-  .brand h1 { font-size: 1.25rem; }
-  .controls { width: 100%; }
-  .controls .field { flex: 1 1 auto; }
+  /* Компактная шапка: две строки управления, тема — во вкладке «Данные» */
+  .top .wrap { padding-top: 8px; padding-bottom: 10px; gap: 6px; }
+  .brand-mark { width: 28px; height: 28px; font-size: .95rem; }
+  .brand h1 { font-size: 1.15rem; }
+  .brand p { display: none; }
+  .controls { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; align-items: end; }
+  .f-hero { grid-column: 1; grid-row: 1; }
+  .f-target { grid-column: 2 / 4; grid-row: 1; }
+  .f-day { grid-column: 1; grid-row: 2; }
+  .f-gold { grid-column: 2; grid-row: 2; }
+  .f-next { grid-column: 3; grid-row: 2; }
+  .f-theme { display: none !important; }
+  .field > span { font-size: .72rem; }
+  .top .field select { width: 100%; min-width: 0; }
+  .stepper { width: 100%; }
+  .stepper button { width: 30px; flex: none; }
+  .stepper input { width: 0; flex: 1 1 auto; min-width: 0; }
+  .next-day { width: 100%; padding: 5px 6px; }
+  .nd-long { display: none; }
+  .nd-short { display: inline; }
   .shelf { grid-template-columns: repeat(10, minmax(58px, 1fr)); min-width: 640px; }
   .offer { grid-template-columns: minmax(0, 1fr); }
   .offer > .thumb { display: none; }
@@ -394,26 +412,26 @@ th { font-family: var(--font-head); }
       </div>
     </div>
     <div class="controls">
-      <label class="field"><span>Герой</span><select id="hero"></select></label>
-      <div class="field"><span id="day-l">День</span>
+      <label class="field f-hero"><span>Герой</span><select id="hero"></select></label>
+      <div class="field f-day"><span id="day-l">День</span>
         <div class="stepper" role="group" aria-labelledby="day-l">
           <button type="button" data-act="step" data-k="day" data-d="-1" aria-label="День меньше">−</button>
           <input id="day" type="number" min="1" max="40" inputmode="numeric" aria-labelledby="day-l">
           <button type="button" data-act="step" data-k="day" data-d="1" aria-label="День больше">+</button>
         </div>
       </div>
-      <div class="field"><span id="gold-l">Золото</span>
+      <div class="field f-gold"><span id="gold-l">Золото</span>
         <div class="stepper" role="group" aria-labelledby="gold-l">
           <button type="button" data-act="step" data-k="gold" data-d="-1" aria-label="Золота меньше">−</button>
           <input id="gold" type="number" min="0" max="9999" inputmode="numeric" aria-labelledby="gold-l">
           <button type="button" data-act="step" data-k="gold" data-d="1" aria-label="Золота больше">+</button>
         </div>
       </div>
-      <div class="field"><span aria-hidden="true">&nbsp;</span>
-        <button type="button" class="next-day" data-act="next-day" title="День +1, предложения торговца очищаются">Следующий день →</button>
+      <div class="field f-next"><span aria-hidden="true">&nbsp;</span>
+        <button type="button" class="next-day" data-act="next-day" title="День +1, предложения торговца очищаются"><span class="nd-long">Следующий день</span><span class="nd-short">Новый день</span> →</button>
       </div>
-      <label class="field"><span>Цель сборки</span><select id="target"></select></label>
-      <div class="field"><span id="theme-l">Тема</span>
+      <label class="field f-target"><span>Цель сборки</span><select id="target"></select></label>
+      <div class="field f-theme"><span id="theme-l">Тема</span>
         <div class="seg" role="group" aria-labelledby="theme-l" id="theme">
           <button type="button" data-act="theme" data-v="system">система</button>
           <button type="button" data-act="theme" data-v="light">светлая</button>
@@ -559,6 +577,14 @@ th { font-family: var(--font-head); }
       <h2>Данные сборок</h2>
       <dl class="kv" id="data-info" style="margin-top:10px"></dl>
       <div id="data-alert"></div>
+    </div>
+    <div class="panel">
+      <h2 id="theme2-l">Тема оформления</h2>
+      <div class="seg" role="group" aria-labelledby="theme2-l" style="margin-top:10px">
+        <button type="button" data-act="theme" data-v="system">система</button>
+        <button type="button" data-act="theme" data-v="light">светлая</button>
+        <button type="button" data-act="theme" data-v="dark">тёмная</button>
+      </div>
     </div>
     <div class="panel">
       <h2>Экспорт и импорт</h2>
@@ -1091,7 +1117,7 @@ function renderHeader() {
   $('target').innerHTML = archOptions(S.run.target, 'любая');
   if (document.activeElement !== $('day')) $('day').value = S.run.day;
   if (document.activeElement !== $('gold')) $('gold').value = S.run.gold;
-  document.querySelectorAll('#theme button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.theme)));
+  document.querySelectorAll('[data-act=theme]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.theme)));
   if (S.theme === 'system') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', S.theme);
 }
