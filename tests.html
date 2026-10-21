@@ -112,7 +112,10 @@ document.getElementById('app').addEventListener('load', () => {
     a = advise({ day: 8 }, 'ATM');
     eq('Экономика, день 8+: 25', a.score, 25);
     check('У экономики нет причины «Размер неизвестен»', !a.reasons.includes('Размер неизвестен'), a.reasons.join(' / '));
-    check('У Jabalian Drum есть причина «Размер неизвестен»', advise({}, 'Jabalian Drum').reasons.includes('Размер неизвестен'));
+    const noSize = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    noSize.heroes.Pygmalien.archetypes[0].items.push({ name: 'Sizeless Thing', size: null, role: 'key' });
+    check('У предмета сборки без размера есть причина «Размер неизвестен»',
+      advise({}, 'Sizeless Thing', null, noSize).reasons.includes('Размер неизвестен'));
     a = advise({}, 'Совсем Неизвестный Предмет');
     eq('Неизвестный предмет: 20 «Пропустить»', [a.score, a.verdict], [20, 'Пропустить']);
     check('Неизвестный: «оцените сами»', a.reasons.some(r => r.includes('оцените сами')));
@@ -133,7 +136,7 @@ document.getElementById('app').addEventListener('load', () => {
       !hintText({ day: 6, target: 'private_hot_springs', board: ["Pyg's Gym"] }).includes('смене направления'));
     check('Предупреждение о переполнении доски',
       hintText({ board: ["Pyg's Gym", 'Vineyard', 'Private Hot Springs', 'Ice Cream Truck'] }).includes('12 слотов из 10'));
-    check('Предупреждение о неизвестном размере', hintText({ board: ['Jabalian Drum'] }).includes('Размер неизвестен'));
+    check('Предупреждение о неизвестном размере', hintText({ board: ['Самодельный Предмет'] }).includes('Размер неизвестен'));
     check('Лучшая сборка и чего не хватает',
       hintText({ board: ['Vineyard', 'Golf Clubs'] }).includes('«Vineyard»') && hintText({ board: ['Vineyard', 'Golf Clubs'] }).includes('Textiles'));
 
@@ -151,7 +154,10 @@ document.getElementById('app').addEventListener('load', () => {
     const hero = DEFAULT_DATA.heroes.Pygmalien;
     const all = hero.archetypes.flatMap(x => [...x.items, ...(x.alternatives || [])]);
     check('У каждой сборки ровно одно ядро', hero.archetypes.every(x => x.items.filter(i => i.role === 'core').length === 1));
-    check('Размеры только S, M, L или null', all.every(i => i.size === null || ['S', 'M', 'L'].includes(i.size)));
+    check('У всех предметов сборок и экономики размер S, M или L',
+      [...all, ...hero.economy_items].every(i => ['S', 'M', 'L'].includes(i.size)),
+      [...all, ...hero.economy_items].filter(i => !['S', 'M', 'L'].includes(i.size)).map(i => i.name).join(', '));
+    check('У экономики есть картинки', hero.economy_items.every(i => i.img));
     check('У каждого предмета сборки есть картинка', all.every(i => i.img), all.filter(i => !i.img).map(i => i.name).join(', '));
     check('replaces ссылается на предмет той же сборки', hero.archetypes.every(x => (x.alternatives || [])
       .every(alt => !alt.replaces || x.items.some(i => i.name === alt.replaces))));
