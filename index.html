@@ -338,7 +338,10 @@ th { font-family: var(--font-head); }
   background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 8px; box-shadow: var(--shadow);
   opacity: 0; pointer-events: none; transition: opacity .2s;
 }
-.toast.show { opacity: 1; }
+.toast { display: flex; align-items: center; gap: 12px; }
+.toast.show { opacity: 1; pointer-events: auto; }
+.toast-undo { border: 0; background: transparent; color: var(--brass); font-weight: 700; cursor: pointer; padding: 4px 2px; text-decoration: underline; }
+.toast-undo[hidden] { display: none; }
 
 @media (max-width: 520px) {
   body { font-size: 16px; }
@@ -549,7 +552,8 @@ th { font-family: var(--font-head); }
     <p>Неофициальный фан-помощник, не связан с Tempo Storm. Не читает экран, память и файлы игры и не управляет вводом.</p>
   </footer>
 </main>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-msg"></span>
+  <button type="button" class="toast-undo" id="toast-undo" data-act="undo" hidden>отменить</button></div>
 
 <script>
 'use strict';
@@ -1101,12 +1105,24 @@ function render() {
 }
 
 let toastTimer = 0;
-function toast(msg) {
+function toast(msg, canUndo = false) {
   const t = $('toast');
-  t.textContent = msg;
+  $('toast-msg').textContent = msg;
+  $('toast-undo').hidden = !canUndo;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => t.classList.remove('show'), canUndo ? 5000 : 2200);
+}
+
+// Отмена: перед каждым изменением забега запоминаем его прошлое состояние (один шаг)
+let undoSnap = null;
+function snapshot() { undoSnap = JSON.stringify(S.run); }
+function undo() {
+  if (!undoSnap) { toast('Нечего отменять'); return; }
+  S.run = fixRun(JSON.parse(undoSnap), data());
+  undoSnap = null;
+  render();
+  toast('Отменено');
 }
 
 // ---------- действия ----------
@@ -1114,6 +1130,7 @@ const DEST_LABEL = { board: 'на доску', offers: 'к торговцу', st
 function addItem(name) {
   const it = info(name);
   const dest = S.ui.dest;
+  snapshot();
   if (dest === 'offers') {
     const pr = $('price').value;
     S.run.offers.push({ name: it.name, price: pr === '' ? null : clampInt(pr, 0, 9999, 0) });
@@ -1122,15 +1139,21 @@ function addItem(name) {
     S.run[dest].push(it.name);
   }
   render();
-  toast(`${it.name} — ${DEST_LABEL[dest]}`);
+  toast(`${it.name} — ${DEST_LABEL[dest]}`, true);
 }
+
+const UNDOABLE = new Set(['board-to-stash', 'board-remove', 'stash-to-board', 'stash-remove', 'offer-remove', 'offer-buy', 'clear-offers']);
 
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]');
   if (!el || el.tagName === 'INPUT') return;
   const act = el.dataset.act, i = Number(el.dataset.i), v = el.dataset.v;
   const run = S.run;
+  if (UNDOABLE.has(act)) snapshot();
+  const name = run[act.startsWith('board') ? 'board' : 'stash'][i];
   switch (act) {
+    case 'undo':
+      undo(); break;
     case 'tab':
       S.ui.tab = v; render(); break;
     case 'theme':
@@ -1149,26 +1172,31 @@ document.addEventListener('click', e => {
     case 'target':
       run.target = v; render(); break;
     case 'board-to-stash':
-      run.stash.push(...run.board.splice(i, 1)); render(); break;
+      run.stash.push(...run.board.splice(i, 1)); render(); toast(`${name} — в стеш`, true); break;
     case 'board-remove':
-      run.board.splice(i, 1); render(); break;
+      run.board.splice(i, 1); render(); toast(`Убрано с доски: ${name}`, true); break;
     case 'stash-to-board':
-      run.board.push(...run.stash.splice(i, 1)); render(); break;
+      run.board.push(...run.stash.splice(i, 1)); render(); toast(`${name} — на доску`, true); break;
     case 'stash-remove':
-      run.stash.splice(i, 1); render(); break;
-    case 'offer-remove':
-      run.offers.splice(i, 1); render(); break;
+      run.stash.splice(i, 1); render(); toast(`Убрано из стеша: ${name}`, true); break;
+    case 'offer-remove': {
+      const [o] = run.offers.splice(i, 1);
+      render();
+      if (o) toast(`Убрано у торговца: ${o.name}`, true);
+      break;
+    }
     case 'offer-buy': {
       const [o] = run.offers.splice(i, 1);
       if (!o) break;
       if (o.price != null) run.gold = Math.max(0, run.gold - o.price);
       run.board.push(o.name);
       render();
-      toast(`Куплено: ${o.name}` + (o.price != null ? `, −${o.price} золота` : ''));
+      toast(`Куплено: ${o.name}` + (o.price != null ? `, −${o.price} золота` : ''), true);
       break;
     }
     case 'clear-offers':
-      run.offers = []; render(); break;
+      if (!run.offers.length) break;
+      run.offers = []; render(); toast('Предложения торговца очищены', true); break;
     case 'history-remove':
       if (confirm('Удалить эту запись из истории?')) { S.history.splice(i, 1); render(); }
       break;
@@ -1185,10 +1213,18 @@ document.addEventListener('click', e => {
 });
 
 function newRun() {
+  snapshot();
   S.run = defaultRun(S.run.hero);
   render();
-  toast('Новый забег');
+  toast('Новый забег', true);
 }
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.code === 'KeyZ' && !e.target.closest('input, textarea, select')) {
+    e.preventDefault();
+    undo();
+  }
+});
 
 $('hero').addEventListener('change', e => {
   S.run = fixRun(Object.assign(defaultRun(e.target.value), { day: S.run.day, gold: S.run.gold }), data());
