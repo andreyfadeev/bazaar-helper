@@ -21,6 +21,9 @@
 ## Данные
 - Источник: [Mobalytics — Meta Builds](https://mobalytics.gg/the-bazaar/guides/meta-builds), обновлено 12.10.2026.
   Встроенные данные лежат в константе `DEFAULT_DATA` в `index.html`.
+- Сборки вне меты (Double Whammy, Freeze, Riceballer, Money Furnace, Landscraper, Square, Luxury Kiuas,
+  Yetarian Club) — из гайдов Kripparrian на [Mobalytics](https://mobalytics.gg/the-bazaar/builds), декабрь 2025 — июнь 2026.
+  В интерфейсе они помечены «вне меты», у каждой указаны дата и ссылка на гайд.
 - Экономические предметы (Loupe, Rewards Card, ATM, Cash Register) взяты из старых гайдов — проверяйте актуальность.
 - Картинки предметов подгружаются с CDN Mobalytics и в репозитории не хранятся.
 - Шрифты Philosopher и Alegreya Sans лежат в `fonts/` (лицензия SIL OFL 1.1, тексты лицензий рядом),

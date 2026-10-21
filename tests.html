@@ -129,6 +129,15 @@ document.getElementById('app').addEventListener('load', () => {
     eq('Предмет в двух сборках: +0.05 → 50', a.score, 50);
     check('Причина «несколько сборок»', a.reasons.some(r => r.includes('несколько сборок')));
 
+    // Сборки вне меты
+    near('Square без ядра: Dog = 1/7', progress({ board: ['Dog'] }, 'square'), 1 / 7);
+    a = advise({ day: 1 }, 'Belt');
+    eq('Belt в 4 сборках, день 1: 0.45 + 3 × 0.05 → 60', a.score, 60);
+    check('В начале забега подсказка про ядро — только мета-сборки', (() => {
+      const t = hintText({ day: 5 });
+      return t.includes("Pyg's Gym") && !t.includes('Double Whammy');
+    })());
+
     // Подсказки
     check('Подсказка сменить направление (день 7, цель < 30%)',
       hintText({ day: 7, target: 'private_hot_springs', board: ["Pyg's Gym"] }).includes('смене направления'));
@@ -153,7 +162,16 @@ document.getElementById('app').addEventListener('load', () => {
     // Данные
     const hero = DEFAULT_DATA.heroes.Pygmalien;
     const all = hero.archetypes.flatMap(x => [...x.items, ...(x.alternatives || [])]);
-    check('У каждой сборки ровно одно ядро', hero.archetypes.every(x => x.items.filter(i => i.role === 'core').length === 1));
+    check('У каждой сборки не больше одного ядра', hero.archetypes.every(x => x.items.filter(i => i.role === 'core').length <= 1));
+    check('У мета-сборок ядро есть всегда', hero.archetypes.filter(x => x.tier === 'meta').every(x => x.items.some(i => i.role === 'core')));
+    check('ID сборок уникальны', new Set(hero.archetypes.map(x => x.id)).size === hero.archetypes.length);
+    check('У каждой сборки tier — meta или offmeta', hero.archetypes.every(x => ['meta', 'offmeta'].includes(x.tier)));
+    check('У сборок вне меты есть автор, дата и ссылка на гайд',
+      hero.archetypes.filter(x => x.tier === 'offmeta').every(x => x.author && /^\d{4}-\d\d-\d\d$/.test(x.updated) && /^https:\/\/mobalytics\.gg\//.test(x.source)));
+    const sameImg = {};
+    for (const i of all) (sameImg[i.name] = sameImg[i.name] || new Set()).add(i.img);
+    check('У одного предмета везде одна картинка', Object.values(sameImg).every(v => v.size === 1),
+      Object.entries(sameImg).filter(([, v]) => v.size > 1).map(([k]) => k).join(', '));
     check('У всех предметов сборок и экономики размер S, M или L',
       [...all, ...hero.economy_items].every(i => ['S', 'M', 'L'].includes(i.size)),
       [...all, ...hero.economy_items].filter(i => !['S', 'M', 'L'].includes(i.size)).map(i => i.name).join(', '));

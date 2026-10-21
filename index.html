@@ -289,6 +289,12 @@ textarea { min-height: 64px; width: 100%; resize: vertical; }
 .build .items { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
 .build p { margin: 4px 0 8px; font-size: .92rem; color: var(--muted); }
 .tag { font-size: .78rem; padding: 0 7px; border-radius: 999px; background: var(--brass-soft); color: var(--brass); font-weight: 700; }
+.tag.alt { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 500; }
+.build .src { font-size: .82rem; margin-top: -4px; }
+.warn-text { color: var(--madder); }
+.more-builds > summary { cursor: pointer; color: var(--brass); font-weight: 700; padding: 6px 0; }
+.more-builds > .builds { margin-top: 6px; }
+#filter-build { width: 100%; }
 
 /* Каталог */
 .catalog-tools { display: grid; gap: 8px; margin-bottom: 10px; }
@@ -299,7 +305,7 @@ textarea { min-height: 64px; width: 100%; resize: vertical; }
 .dest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .dest input { width: 80px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; max-height: 62vh; overflow-y: auto; padding: 2px; }
-@media (max-width: 920px) { .grid { max-height: none; } }
+@media (max-width: 920px) { .grid { max-height: min(440px, 60vh); } }
 .card {
   position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px;
   border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); cursor: pointer; text-align: center; min-width: 0;
@@ -452,6 +458,8 @@ th { font-family: var(--font-head); }
           <label class="sr-only" for="search">Поиск предмета</label>
           <input id="search" type="search" placeholder="Поиск… (Enter — добавить первый)" autocomplete="off">
           <div class="filters" id="filters" role="group" aria-label="Фильтр каталога"></div>
+          <label class="sr-only" for="filter-build">Показать предметы одной сборки</label>
+          <select id="filter-build"></select>
           <div class="dest">
             <span class="small muted" id="dest-l">Куда добавлять</span>
             <div class="seg" role="group" aria-labelledby="dest-l" id="dest">
@@ -573,7 +581,7 @@ const STALE_DAYS = 45;
 const NO_STORE = new URLSearchParams(location.search).has('nostore');
 
 const DEFAULT_DATA = {
-  version: 'S19-2026-10-12',
+  version: 'S19-2026-10-21',
   season: 19,
   updated: '2026-10-12',
   source: 'https://mobalytics.gg/the-bazaar/guides/meta-builds',
@@ -584,6 +592,7 @@ const DEFAULT_DATA = {
       archetypes: [
         {
           id: 'pygs_gym',
+          tier: 'meta',
           name: "Pyg's Gym",
           summary_ru: 'Одна из самых надёжных сборок Pyg: сильный бафф урона в начале боя, быстро заканчивает схватки. Jabalian Drum играет похоже и служит планом Б, если Pyg\'s Gym не нашёлся.',
           items: [
@@ -601,6 +610,7 @@ const DEFAULT_DATA = {
         },
         {
           id: 'vineyard',
+          tier: 'meta',
           name: 'Vineyard',
           summary_ru: 'Архетип на Slow и лечение. Обычно побеждает через Golf Clubs. Сочетает атаку, защиту и немного контроля. Если на Vineyard выпал атакующий энчант, Golf Clubs и Textiles можно заменить утилитой вроде Luxury Tents.',
           items: [
@@ -617,6 +627,7 @@ const DEFAULT_DATA = {
         },
         {
           id: 'private_hot_springs',
+          tier: 'meta',
           name: 'Private Hot Springs',
           summary_ru: 'Частый Burn с заморозкой на 3 секунды, способный запереть доску соперника. Наказывает сборки, которые не убивают за один удар; Regen гасит чужой урон со временем.',
           items: [
@@ -624,6 +635,159 @@ const DEFAULT_DATA = {
             { name: 'Ice Cream Truck', size: 'L', role: 'key', img: '012658f4-b289-4f10-917c-a9a1f3f9ca03' },
             { name: 'Cold Room', size: 'M', role: 'key', img: '6546e26d-d3a2-4b57-96ca-357f4be5c375' },
             { name: 'Snow Globe', size: 'M', role: 'key', img: '4680e750-4ea4-421a-b486-194c805ad6a8' }
+          ],
+          alternatives: []
+        },
+        {
+          id: 'double_whammy',
+          tier: 'offmeta',
+          name: 'Double Whammy',
+          author: 'Kripparrian',
+          updated: '2026-06-27',
+          source: 'https://mobalytics.gg/the-bazaar/builds/double-whammy-pygmalien-kripp',
+          summary_ru: 'Поздняя сборка: процентный урон, способный убить с одного удара, и огромный запас здоровья. Ядро появляется только с Gold-тира, поэтому заранее держите Pawn Shop в стеше и играйте от экономики. Одна из немногих сборок, которые отыгрываются после ранних поражений.',
+          items: [
+            { name: 'Double Whammy', size: 'L', role: 'core', img: 'e37638c3-4e5c-472c-96f9-b503a86e0fe3' },
+            { name: 'Pawn Shop', size: 'L', role: 'key', img: '31b35938-9402-4990-b4d9-473ce5887af9', note_ru: 'до поздней игры держите в стеше и наращивайте Value' },
+            { name: 'Belt', size: 'M', role: 'key', img: '4f8bc475-212c-49cf-b3e5-d1f971897a24' },
+            { name: 'Booby Trap', size: 'M', role: 'key', img: 'fe1a40e3-cedc-4a7f-83f0-998286f71725', note_ru: 'заморозка выигрывает время до удара' },
+            { name: 'Gramophone', size: 'M', role: 'key', img: 'b6afda86-9dec-4580-b1e3-4d1cc59c3029' },
+            { name: 'Lion Cane', size: 'M', role: 'key', img: '9a7d5711-930a-4815-86cc-4e357680730c' },
+            { name: 'Fort', size: 'L', role: 'key', img: 'fb9bc349-bc38-40f4-a67e-a9c580e1e681' }
+          ],
+          alternatives: []
+        },
+        {
+          id: 'freeze',
+          tier: 'offmeta',
+          name: 'Freeze (Igloo)',
+          author: 'Kripparrian',
+          updated: '2026-06-25',
+          source: 'https://mobalytics.gg/the-bazaar/builds/freeze-pygmalien-kripp',
+          summary_ru: 'Классическая заморозка Pyg: контроль всей доски соперника плюс неплохие атака и защита. Собрать непросто, зато высокий потолок в поздней игре. Пересекается с Private Hot Springs.',
+          items: [
+            { name: 'Igloo', size: 'L', role: 'core', img: 'acaebb2b-fe63-4de0-9d9e-949673c08a47' },
+            { name: 'Private Hot Springs', size: 'L', role: 'key', img: '2e0be4f0-0472-444a-a541-09f1ba464c64' },
+            { name: 'Cold Room', size: 'M', role: 'key', img: '6546e26d-d3a2-4b57-96ca-357f4be5c375' },
+            { name: 'Steam Ladle', size: 'S', role: 'key', img: '194572c8-39b0-4dea-92d5-2c97f8d59554' },
+            { name: 'Yetarian Club', size: 'L', role: 'key', img: '60fc7e96-c754-40be-803b-e9237aeb920d' },
+            { name: 'Stopwatch', size: 'S', role: 'key', img: '428de0f0-bf0d-4da6-9abe-dde8f2174aa9' },
+            { name: 'Ice Luge', size: 'S', role: 'key', img: '9d31868e-1c69-4186-a3df-8ca10dc2a80f' }
+          ],
+          alternatives: []
+        },
+        {
+          id: 'riceballer',
+          tier: 'offmeta',
+          name: 'Riceballer',
+          author: 'Kripparrian',
+          updated: '2026-06-18',
+          source: 'https://mobalytics.gg/the-bazaar/builds/riceballer-pygmalien-kripp',
+          summary_ru: 'Riceballer превращает накопленную Value в огромный Burn и сам наращивает Multicast. Нужно копить Value и аккуратно вести стеш, поэтому сборка не самая простая.',
+          items: [
+            { name: 'Riceballer', size: 'M', role: 'core', img: '6508a7c7-c5f1-445a-a822-da9c2ed10455' },
+            { name: 'Display Case', size: 'M', role: 'key', img: 'fc3ed622-30d7-4df3-8530-a34e8d47a363' },
+            { name: 'Sauna', size: 'M', role: 'key', img: '21c858b6-6f6e-4bc5-9e84-3722b3dd813a' },
+            { name: 'Luxury Tents', size: 'L', role: 'key', img: '3b1e3858-93d4-45c8-892b-b66aec1b14a9' },
+            { name: 'Gramophone', size: 'M', role: 'key', img: 'b6afda86-9dec-4580-b1e3-4d1cc59c3029' },
+            { name: 'Belt', size: 'M', role: 'key', img: '4f8bc475-212c-49cf-b3e5-d1f971897a24' },
+            { name: 'Shadowed Cloak', size: 'M', role: 'key', img: '6f70e0cf-8349-4f14-a121-6c9065dc514c' }
+          ],
+          alternatives: []
+        },
+        {
+          id: 'money_furnace',
+          tier: 'offmeta',
+          name: 'Money Furnace',
+          author: 'Kripparrian',
+          updated: '2026-04-26',
+          source: 'https://mobalytics.gg/the-bazaar/builds/money-furnace-pygmalien-kripp',
+          summary_ru: 'Сжигает золото ради Burn и может в одиночку закрывать бои. Чем раньше начать вкладываться, тем лучше сборка масштабируется к концу забега.',
+          items: [
+            { name: 'Money Furnace', size: 'M', role: 'core', img: '7153afb9-c4c6-4449-8d70-d1b88fc86c1a' },
+            { name: 'Money Tree', size: 'L', role: 'key', img: '49895243-8b5d-407f-9c8c-efdd05b3a34a' },
+            { name: 'Billboard', size: 'L', role: 'key', img: '18e2e46f-6419-44b3-80fa-11b13bc7b831' },
+            { name: 'Gramophone', size: 'M', role: 'key', img: 'b6afda86-9dec-4580-b1e3-4d1cc59c3029' },
+            { name: 'Belt', size: 'M', role: 'key', img: '4f8bc475-212c-49cf-b3e5-d1f971897a24' },
+            { name: 'Booby Trap', size: 'M', role: 'key', img: 'fe1a40e3-cedc-4a7f-83f0-998286f71725' },
+            { name: 'Luxury Tents', size: 'L', role: 'key', img: '3b1e3858-93d4-45c8-892b-b66aec1b14a9' }
+          ],
+          alternatives: []
+        },
+        {
+          id: 'landscraper',
+          tier: 'offmeta',
+          name: 'Landscraper',
+          author: 'Kripparrian',
+          updated: '2026-02-21',
+          source: 'https://mobalytics.gg/the-bazaar/builds/landscraper-pygmalien-kripp',
+          summary_ru: 'Конверсия щита в урон: Landscraper и Spiky Shield превращают сильную защиту в атаку с потенциалом убить с одного удара. Многие ключевые предметы бывают уже с Bronze, поэтому в сборку заходят часто.',
+          items: [
+            { name: 'Landscraper', size: 'L', role: 'core', img: '530b642b-4a31-4cc4-a7ae-ea22d607ad4d' },
+            { name: 'Spiky Shield', size: 'M', role: 'key', img: '8ec1c3f9-6220-431b-b3b0-52b3be2e20f5' },
+            { name: 'Silk Scarf', size: 'M', role: 'key', img: 'aff2d8f4-528a-4229-8175-8901fcadcb70' },
+            { name: 'Model Ship', size: 'M', role: 'key', img: 'c14e76be-2dd6-4d0b-8652-04c6b46412d5' },
+            { name: 'Piggles Protectors', size: 'S', role: 'key', img: '4997b886-940a-4882-92f2-e5c8042749df' },
+            { name: 'Sponsored Apparel', size: 'M', role: 'key', img: '57118705-887e-44fb-b4bc-586aa4f20baf' },
+            { name: 'Display Case', size: 'M', role: 'key', img: 'fc3ed622-30d7-4df3-8530-a34e8d47a363' }
+          ],
+          alternatives: []
+        },
+        {
+          id: 'square',
+          tier: 'offmeta',
+          name: 'Square',
+          author: 'Kripparrian',
+          updated: '2026-02-08',
+          source: 'https://mobalytics.gg/the-bazaar/builds/square-pygmalien-kripp',
+          summary_ru: 'Агрессивная сборка Pyg на средних предметах: урон в начале боя, цель — победить раньше, чем соперник разгонится. Собирается легко, но при серии поражений ищите план Б. Единого ядра нет — все предметы равноценны.',
+          items: [
+            { name: 'Dog', size: 'M', role: 'key', img: '6965d291-610d-46b7-a10d-83578b0e1981' },
+            { name: 'Regal Blade', size: 'M', role: 'key', img: '6ada601b-88a5-4eaf-8813-805bd51c7f9b' },
+            { name: 'Belt', size: 'M', role: 'key', img: '4f8bc475-212c-49cf-b3e5-d1f971897a24' },
+            { name: 'Lion Cane', size: 'M', role: 'key', img: '9a7d5711-930a-4815-86cc-4e357680730c' },
+            { name: 'Gramophone', size: 'M', role: 'key', img: 'b6afda86-9dec-4580-b1e3-4d1cc59c3029' },
+            { name: 'Atlatl', size: 'M', role: 'key', img: 'b2681448-9dec-47c7-bb4f-58c51830735d' },
+            { name: 'Caltrops', size: 'M', role: 'key', img: 'a0c3a02b-4d29-4159-805e-3501463d1ca1' }
+          ],
+          alternatives: []
+        },
+        {
+          id: 'luxury_kiuas',
+          tier: 'offmeta',
+          name: 'Luxury Kiuas',
+          author: 'Kripparrian',
+          updated: '2026-01-27',
+          source: 'https://mobalytics.gg/the-bazaar/builds/luxury-kiuas-pygmalien-kripp',
+          summary_ru: 'Luxury Kiuas работает почти как Property: через экономику копите его Value, и соперник сгорает за секунды. Нужна сильная экономика и аккуратное управление стешем.',
+          items: [
+            { name: 'Luxury Kiuas', size: 'M', role: 'core', img: '25035a36-1105-4ef9-81b0-c5bb6926415b' },
+            { name: 'Ledger', size: 'M', role: 'key', img: '5a4c4c98-d41e-43f8-aa39-a74847e2ff3c' },
+            { name: 'Abacus', size: 'S', role: 'key', img: 'a05d23cb-af36-42fa-aab1-568aba7f30c6' },
+            { name: 'Truffles', size: 'S', role: 'key', img: '2aab9e1b-8c8d-49d0-be45-5884731ebb08' },
+            { name: 'Fixer Upper', size: 'L', role: 'key', img: '43190b98-4f7f-4b2e-b92e-32b07b7fc2e1' },
+            { name: 'Keychain', size: 'S', role: 'key', img: '6aa8be90-55f4-4fec-bd92-811e175657a1' },
+            { name: 'Oinkment', size: 'S', role: 'key', img: '64e3569f-e023-49a5-ab75-f9613c338d53' }
+          ],
+          alternatives: []
+        },
+        {
+          id: 'yetarian_club',
+          tier: 'offmeta',
+          name: 'Yetarian Club',
+          author: 'Kripparrian',
+          updated: '2025-12-14',
+          source: 'https://mobalytics.gg/the-bazaar/builds/giant-ice-club-pygmalien-kripp',
+          note_ru: 'гайд декабря 2025 года, там предмет назывался Giant Ice Club — проверьте актуальность',
+          summary_ru: 'Простой разворот в середине забега: по сути нужны только Yetarian Club и Stopwatch. Сильная база и очень высокий потолок, так что шанс есть даже при отставании.',
+          items: [
+            { name: 'Yetarian Club', size: 'L', role: 'core', img: '60fc7e96-c754-40be-803b-e9237aeb920d' },
+            { name: 'Stopwatch', size: 'S', role: 'key', img: '428de0f0-bf0d-4da6-9abe-dde8f2174aa9', note_ru: 'вторая половина связки' },
+            { name: 'Spices', size: 'S', role: 'key', img: 'c05828f1-39e6-47aa-9041-216dfa60d83d' },
+            { name: 'Showcase', size: 'M', role: 'key', img: 'ff16ffda-dee0-40db-a14c-302d35ee3b2d' },
+            { name: 'Weights', size: 'M', role: 'key', img: '34fcf624-ccba-42a8-b4fc-837e0002a163' },
+            { name: 'Ganjo', size: 'M', role: 'key', img: 'c9c9a413-59b3-4fc8-b4ab-dcfac0a44e90' },
+            { name: 'Marbles', size: 'S', role: 'key', img: 'a87c42a5-b21e-4179-9827-ceea46c25033' }
           ],
           alternatives: []
         }
@@ -724,6 +888,7 @@ function catalog() {
       img: (list.find(x => x.it.img) || {}).it?.img || null,
       archs: [...new Set(list.map(x => x.a.id))],
       core: list.some(x => x.it.role === 'core'),
+      meta: list.some(x => x.a.tier !== 'offmeta'),
       eco: false, custom: false
     });
   }
@@ -851,7 +1016,7 @@ function hints(run) {
       h.push({ text: `Цель «${tgt.name}»: ${Math.round(tgt.progress * 100)}%. Не хватает: ${missText(tgt)}.` });
     }
   } else if (top.progress === 0) {
-    const cores = archetypes().map(a => (a.items.find(i => i.role === 'core') || {}).name).filter(Boolean);
+    const cores = archetypes().filter(a => a.tier !== 'offmeta').map(a => (a.items.find(i => i.role === 'core') || {}).name).filter(Boolean);
     h.push({ text: (run.day >= 5 ? 'Ни одна мета-сборка пока не начата. ' : 'Начало забега: ') + 'ищите ядро — ' + cores.join(', ') + '.' });
   } else {
     h.push({ text: `Лучше всего подходит «${top.name}» (${Math.round(top.progress * 100)}%). Не хватает: ${missText(top)}.` });
@@ -908,7 +1073,7 @@ function sizeBadge(name) {
 function renderHeader() {
   const d = data();
   $('hero').innerHTML = Object.keys(d.heroes).map(h => `<option value="${esc(h)}"${h === S.run.hero ? ' selected' : ''}>${esc(h)}</option>`).join('');
-  $('target').innerHTML = '<option value="">любая</option>' + archetypes().map(a => `<option value="${esc(a.id)}"${a.id === S.run.target ? ' selected' : ''}>${esc(a.name)}</option>`).join('');
+  $('target').innerHTML = archOptions(S.run.target, 'любая');
   if (document.activeElement !== $('day')) $('day').value = S.run.day;
   if (document.activeElement !== $('gold')) $('gold').value = S.run.gold;
   document.querySelectorAll('#theme button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.theme)));
@@ -983,9 +1148,19 @@ function renderStash() {
     : '<p class="empty-note">Стеш пуст.</p>');
 }
 
+const isOffmeta = a => a.tier === 'offmeta';
+
+function buildSource(a) {
+  if (!isOffmeta(a)) return '<p class="src">Mobalytics, мета-гайд сезона</p>';
+  const when = a.updated ? fmtDate(a.updated) : '';
+  const link = a.source ? ` · <a href="${esc(a.source)}" target="_blank" rel="noopener noreferrer">гайд</a>` : '';
+  const warn = a.note_ru ? `<br><span class="warn-text">${esc(a.note_ru)}</span>` : '';
+  return `<p class="src">${esc(a.author || 'гайд')}${when ? ', ' + esc(when) : ''}${link}${warn}</p>`;
+}
+
 function renderBuilds() {
   const owned = ownedSet(S.run);
-  setHTML($('builds'), matches(S.run).map(m => {
+  const card = m => {
     const pct = Math.round(m.progress * 100);
     const isT = m.id === S.run.target;
     const all = [...m.a.items, ...(m.a.alternatives || [])];
@@ -995,21 +1170,42 @@ function renderBuilds() {
       return `<span title="${esc(label)}">${thumb(it.name, 'sm' + (has ? '' : ' missing') + (it.role === 'core' ? ' core' : ''))}<span class="sr-only">${esc(label)}</span></span>`;
     }).join('');
     return `<div class="build${isT ? ' is-target' : ''}">
-      <div class="row1"><h3>${esc(m.name)}</h3>${isT ? '<span class="tag">цель</span>' : ''}<span class="pct">${pct}%</span></div>
+      <div class="row1"><h3>${esc(m.name)}</h3>${isOffmeta(m.a) ? '<span class="tag alt">вне меты</span>' : '<span class="tag">мета</span>'}${isT ? '<span class="tag">цель</span>' : ''}<span class="pct">${pct}%</span></div>
       <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
       <div class="items">${thumbs}</div>
       <p>${esc(m.a.summary_ru || '')}</p>
+      ${buildSource(m.a)}
       ${isT ? '<button type="button" class="btn tiny" data-act="target" data-v="">Снять цель</button>'
             : `<button type="button" class="btn tiny" data-act="target" data-v="${esc(m.id)}">Сделать целью</button>`}
     </div>`;
-  }).join(''));
+  };
+  // Не начатые сборки вне меты прячем под спойлер, чтобы список не разрастался
+  const ms = matches(S.run);
+  const hidden = ms.filter(m => isOffmeta(m.a) && m.progress === 0 && m.id !== S.run.target);
+  const shown = ms.filter(m => !hidden.includes(m));
+  setHTML($('builds'), shown.map(card).join('') + (hidden.length
+    ? `<details class="more-builds" id="more-builds"${S.ui.moreBuilds ? ' open' : ''}>
+        <summary>Ещё сборки вне меты: ${hidden.length} (пока не начаты)</summary>
+        <div class="builds">${hidden.map(card).join('')}</div></details>`
+    : ''));
+}
+
+function archOptions(selected, emptyLabel) {
+  const opt = a => `<option value="${esc(a.id)}"${a.id === selected ? ' selected' : ''}>${esc(a.name)}</option>`;
+  const meta = archetypes().filter(a => !isOffmeta(a)), off = archetypes().filter(isOffmeta);
+  return `<option value="">${esc(emptyLabel)}</option>` +
+    (off.length ? `<optgroup label="Мета">${meta.map(opt).join('')}</optgroup><optgroup label="Вне меты">${off.map(opt).join('')}</optgroup>`
+      : meta.map(opt).join(''));
 }
 
 function renderFilters() {
-  const opts = [['all', 'Все'], ...archetypes().map(a => [a.id, a.name]), ['eco', 'Экономика']];
+  const opts = [['all', 'Все'], ['meta', 'Мета'], ['offmeta', 'Вне меты'], ['eco', 'Экономика']];
+  if (!archetypes().some(isOffmeta)) opts.splice(1, 2);
   if (S.customItems.length) opts.push(['custom', 'Свои']);
-  if (!opts.some(o => o[0] === S.ui.filter)) S.ui.filter = 'all';
+  const isArch = archetypes().some(a => a.id === S.ui.filter);
+  if (!isArch && !opts.some(o => o[0] === S.ui.filter)) S.ui.filter = 'all';
   $('filters').innerHTML = opts.map(([v, l]) => `<button type="button" data-act="filter" data-v="${esc(v)}" aria-pressed="${v === S.ui.filter}">${esc(l)}</button>`).join('');
+  if (document.activeElement !== $('filter-build')) $('filter-build').innerHTML = archOptions(isArch ? S.ui.filter : '', 'одна сборка…');
   document.querySelectorAll('#dest button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.ui.dest)));
   $('price-wrap').hidden = S.ui.dest !== 'offers';
 }
@@ -1018,9 +1214,10 @@ function filteredCatalog() {
   const q = norm($('search').value || '');
   const f = S.ui.filter;
   return [...catalog().values()].filter(it =>
-    (f === 'all' || (f === 'eco' && it.eco) || (f === 'custom' && it.custom) || it.archs.includes(f)) &&
+    (f === 'all' || (f === 'eco' && it.eco) || (f === 'custom' && it.custom) ||
+      (f === 'meta' && it.meta) || (f === 'offmeta' && it.archs.length && !it.meta) || it.archs.includes(f)) &&
     (!q || norm(it.name).includes(q))
-  ).sort((a, b) => (b.core - a.core) || a.name.localeCompare(b.name));
+  ).sort((a, b) => (b.meta - a.meta) || (b.core - a.core) || a.name.localeCompare(b.name));
 }
 
 function renderCatalog() {
@@ -1030,7 +1227,8 @@ function renderCatalog() {
   $('cat-count').textContent = `${list.length} шт.`;
   setHTML($('catalog'), list.length ? list.map(it => {
     const has = owned.has(norm(it.name));
-    const meta = it.eco ? 'экономика' : it.custom ? 'свой' : it.archs.map(a => archName[a]).join(', ');
+    const names = it.archs.map(a => archName[a]);
+    const meta = it.eco ? 'экономика' : it.custom ? 'свой' : names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2}` : names.join(', ');
     return `<button type="button" class="card" data-act="add" data-name="${esc(it.name)}" title="${esc(it.name)}${has ? ' — уже есть' : ''}">
       ${has ? '<span class="own" aria-label="уже есть">✓</span>' : ''}${thumb(it.name)}
       <span class="nm">${esc(it.name)}</span><span class="meta">${it.size || '?'} · ${esc(meta)}</span></button>`;
@@ -1245,6 +1443,10 @@ $('hero').addEventListener('change', e => {
   render();
 });
 $('target').addEventListener('change', e => { S.run.target = e.target.value; render(); });
+$('filter-build').addEventListener('change', e => { S.ui.filter = e.target.value || 'all'; render(); });
+document.addEventListener('toggle', e => {
+  if (e.target.id === 'more-builds') { S.ui.moreBuilds = e.target.open; save(); }
+}, true);
 for (const k of ['day', 'gold']) {
   $(k).addEventListener('change', e => {
     S.run[k] = k === 'day' ? clampInt(e.target.value, 1, 40, 1) : clampInt(e.target.value, 0, 9999, 0);
