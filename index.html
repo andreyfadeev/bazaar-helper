@@ -146,7 +146,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: rgba(255, 255, 255, .1); color: #fbf3e4;
   border: 1px solid rgba(255, 255, 255, .28); border-radius: 8px; padding: 5px 8px; min-height: 36px;
 }
-.top select option { color: #222; background: #fff; }
+select option, select optgroup { color: var(--ink); background: var(--surface); }
+select optgroup { color: var(--brass); font-style: normal; font-weight: 700; }
+/* Выпадающий список рисуется на белом фоне — тексту и подписям групп нужен тёмный цвет */
+.top select option, .top select optgroup { color: #222; background: #fff; }
+.top select optgroup { color: #6b4a1a; font-style: normal; font-weight: 700; }
 .stepper { display: inline-flex; align-items: stretch; }
 .stepper button {
   width: 34px; min-height: 36px; border: 1px solid rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .14);
