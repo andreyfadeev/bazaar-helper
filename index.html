@@ -1,0 +1,1277 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bazaar Helper</title>
+<meta name="description" content="Помощник по мета-сборкам The Bazaar: какие предметы брать за Pygmalien. Не взаимодействует с игрой.">
+<meta name="referrer" content="no-referrer">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:wght@400;500;700&family=Philosopher:wght@400;700&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #ece6dc;
+  --bg-grain: #e4ddd1;
+  --surface: #f7f3ec;
+  --surface-2: #efe9de;
+  --ink: #2a251f;
+  --muted: #6a6155;
+  --line: #d6ccbb;
+  --brass: #94701f;
+  --brass-ink: #ffffff;
+  --brass-soft: #efe2c2;
+  --wood: #8b5a33;
+  --wood-dark: #5e3a1f;
+  --wood-light: #b07a4b;
+  --slot: #f3ebdc;
+  --jade: #2d7a57;
+  --saffron: #a96d12;
+  --madder: #a3392e;
+  --jade-soft: #dcefe4;
+  --saffron-soft: #f6e6c6;
+  --madder-soft: #f5dcd7;
+  --focus: #2f6fb0;
+  --shadow: 0 1px 2px rgba(60, 40, 20, .08), 0 4px 14px rgba(60, 40, 20, .07);
+  --radius: 10px;
+  --font-head: "Philosopher", "Georgia", "Times New Roman", serif;
+  --font-body: "Alegreya Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #1b1916;
+    --bg-grain: #201d19;
+    --surface: #262320;
+    --surface-2: #2e2a25;
+    --ink: #ece5d9;
+    --muted: #a69c8e;
+    --line: #3d372f;
+    --brass: #d3a548;
+    --brass-ink: #1b1916;
+    --brass-soft: #3a3020;
+    --wood: #6e4628;
+    --wood-dark: #46291a;
+    --wood-light: #8d5d37;
+    --slot: #2b2621;
+    --jade: #63c193;
+    --saffron: #e3ac4c;
+    --madder: #e57b6d;
+    --jade-soft: #1f3a2d;
+    --saffron-soft: #3d311b;
+    --madder-soft: #42231f;
+    --focus: #7fb4ea;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .25);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1b1916;
+  --bg-grain: #201d19;
+  --surface: #262320;
+  --surface-2: #2e2a25;
+  --ink: #ece5d9;
+  --muted: #a69c8e;
+  --line: #3d372f;
+  --brass: #d3a548;
+  --brass-ink: #1b1916;
+  --brass-soft: #3a3020;
+  --wood: #6e4628;
+  --wood-dark: #46291a;
+  --wood-light: #8d5d37;
+  --slot: #2b2621;
+  --jade: #63c193;
+  --saffron: #e3ac4c;
+  --madder: #e57b6d;
+  --jade-soft: #1f3a2d;
+  --saffron-soft: #3d311b;
+  --madder-soft: #42231f;
+  --focus: #7fb4ea;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .25);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  background-image: radial-gradient(var(--bg-grain) 1px, transparent 1px);
+  background-size: 6px 6px;
+  color: var(--ink);
+  font: 17px/1.45 var(--font-body);
+  overflow-x: hidden;
+}
+h1, h2, h3 { font-family: var(--font-head); font-weight: 700; margin: 0; line-height: 1.2; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+a { color: var(--brass); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.muted { color: var(--muted); }
+.small { font-size: .88rem; }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px; }
+
+/* Шапка */
+.top {
+  background: linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
+  color: #f6ecdc;
+  border-bottom: 4px solid var(--brass);
+  box-shadow: var(--shadow);
+}
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding-top: 12px; padding-bottom: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.brand-mark {
+  width: 38px; height: 38px; border-radius: 8px; flex: none;
+  background: linear-gradient(135deg, #e2bd6a, #9a7124);
+  display: grid; place-items: center; color: #2a1c0c; font: 700 1.2rem var(--font-head);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25);
+}
+.brand h1 { font-size: 1.45rem; color: #fbf3e4; }
+.brand p { margin: 0; font-size: .85rem; color: #e6d3b5; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 2px; }
+.field > span { font-size: .8rem; color: #e6d3b5; }
+.top .field select, .top .field input {
+  background: rgba(255, 255, 255, .1); color: #fbf3e4;
+  border: 1px solid rgba(255, 255, 255, .28); border-radius: 8px; padding: 5px 8px; min-height: 36px;
+}
+.top select option { color: #222; background: #fff; }
+.stepper { display: inline-flex; align-items: stretch; }
+.stepper button {
+  width: 34px; min-height: 36px; border: 1px solid rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .14);
+  color: #fbf3e4; cursor: pointer; font-size: 1.1rem; line-height: 1;
+}
+.stepper button:first-child { border-radius: 8px 0 0 8px; }
+.stepper button:last-child { border-radius: 0 8px 8px 0; }
+.stepper button:hover { background: rgba(255, 255, 255, .24); }
+.stepper input { width: 54px; text-align: center; border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; -moz-appearance: textfield; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 5px 10px; cursor: pointer; min-height: 34px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--brass); color: var(--brass-ink); }
+.top .seg { border-color: rgba(255, 255, 255, .28); }
+.top .seg button { color: #fbf3e4; }
+.top .seg button + button { border-left-color: rgba(255, 255, 255, .28); }
+.top .seg button[aria-pressed="true"] { background: #e2bd6a; color: #2a1c0c; }
+
+.notice { font-size: .88rem; color: var(--muted); padding: 8px 0 0; margin: 0; }
+
+/* Вкладки */
+.tabs { display: flex; gap: 4px; margin: 14px 0 12px; border-bottom: 2px solid var(--line); overflow-x: auto; overflow-y: hidden; }
+.tabs button {
+  border: 0; background: transparent; padding: 8px 14px; cursor: pointer; font: 700 1rem var(--font-head);
+  color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap;
+}
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--brass); }
+.tabs button:hover { color: var(--ink); }
+
+/* Карточки и панели */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; min-width: 0; }
+.panel + .panel { margin-top: 14px; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; margin-bottom: 10px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); gap: 14px; align-items: start; }
+.side { position: sticky; top: 12px; }
+@media (max-width: 920px) {
+  /* На узком экране каталог идёт сразу после доски: так быстрее вводить предметы */
+  .layout { display: flex; flex-direction: column; align-items: stretch; }
+  .layout > .main { display: contents; }
+  .layout .panel + .panel { margin-top: 0; }
+  .side { position: static; order: 3; }
+  .o-offers { order: 4; }
+  .o-stash { order: 5; }
+  .o-builds { order: 6; }
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px;
+  padding: 5px 12px; min-height: 34px; cursor: pointer; text-decoration: none; color: var(--ink);
+}
+.btn:hover { border-color: var(--brass); }
+.btn.primary { background: var(--brass); color: var(--brass-ink); border-color: var(--brass); font-weight: 700; }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn.danger { color: var(--madder); }
+.btn.tiny { padding: 1px 6px; min-height: 26px; font-size: .78rem; border-radius: 6px; }
+.btn[disabled] { opacity: .55; cursor: default; }
+
+input[type="text"], input[type="number"], input[type="search"], select, textarea {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; min-height: 36px; max-width: 100%;
+}
+textarea { min-height: 64px; width: 100%; resize: vertical; }
+
+/* Подсказки */
+.hints { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.hints li { padding: 8px 12px; border-left: 4px solid var(--brass); background: var(--brass-soft); border-radius: 0 8px 8px 0; }
+.hints li.warn { border-left-color: var(--madder); background: var(--madder-soft); }
+
+/* Миниатюра */
+.thumb {
+  position: relative; display: inline-grid; place-items: center; flex: none;
+  width: 44px; height: 44px; border-radius: 8px; overflow: hidden;
+  background: linear-gradient(135deg, var(--brass-soft), var(--surface-2)); border: 1px solid var(--line);
+}
+.thumb .ini { font: 700 .95rem var(--font-head); color: var(--brass); }
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thumb.lg { width: 56px; height: 56px; }
+.thumb.sm { width: 34px; height: 34px; }
+.thumb.sm .ini { font-size: .78rem; }
+.thumb.missing { filter: grayscale(1); opacity: .45; }
+.thumb.core { box-shadow: 0 0 0 2px var(--brass); }
+
+/* Доска — полка */
+.shelf-scroll { overflow-x: auto; padding-bottom: 4px; }
+.shelf {
+  display: grid; grid-template-columns: repeat(10, minmax(70px, 1fr)); grid-auto-flow: row dense; gap: 6px;
+  padding: 10px 10px 16px; border-radius: 8px; min-width: 760px;
+  background: linear-gradient(180deg, var(--wood-light), var(--wood) 70%, var(--wood-dark));
+  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, .18), inset 0 2px 0 rgba(255, 255, 255, .12);
+}
+.slot { min-height: 128px; border-radius: 6px; }
+.slot.empty { border: 2px dashed rgba(255, 240, 220, .35); background: rgba(0, 0, 0, .08); }
+.slot.item {
+  background: var(--slot); border: 1px solid rgba(0, 0, 0, .2); padding: 6px; display: flex; flex-direction: column;
+  align-items: center; gap: 4px; text-align: center; min-width: 0; box-shadow: 0 2px 0 rgba(0, 0, 0, .2);
+}
+.slot.over { outline: 2px solid var(--madder); }
+.slot .nm { font-size: .82rem; line-height: 1.15; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.slot .acts { margin-top: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+.size { display: inline-block; font-size: .7rem; padding: 0 5px; border-radius: 4px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.shelf-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-size: .9rem; }
+
+/* Торговец */
+.offers { display: grid; gap: 10px; }
+.offer { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+.offer .row1 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.offer .nm { font-weight: 700; font-size: 1.05rem; }
+.score { font: 700 1.3rem var(--font-head); min-width: 2.2ch; text-align: right; margin-left: auto; }
+.bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; margin: 6px 0; }
+.bar > i { display: block; height: 100%; border-radius: 4px; background: var(--brass); }
+.v-take .bar > i { background: var(--jade); }
+.v-maybe .bar > i { background: var(--saffron); }
+.v-skip .bar > i { background: var(--madder); }
+.verdict { font-size: .85rem; font-weight: 700; padding: 1px 9px; border-radius: 999px; }
+.v-take .verdict { background: var(--jade-soft); color: var(--jade); }
+.v-maybe .verdict { background: var(--saffron-soft); color: var(--saffron); }
+.v-skip .verdict { background: var(--madder-soft); color: var(--madder); }
+.v-take .score { color: var(--jade); }
+.v-maybe .score { color: var(--saffron); }
+.v-skip .score { color: var(--madder); }
+.reasons { margin: 0; padding-left: 18px; font-size: .9rem; color: var(--muted); }
+.offer .acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.offer .acts label { display: inline-flex; align-items: center; gap: 4px; font-size: .88rem; }
+.offer .acts input { width: 70px; min-height: 30px; }
+
+/* Стеш */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 6px 3px 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); }
+.chip .thumb { border-radius: 50%; }
+
+/* Сборки */
+.builds { display: grid; gap: 10px; }
+.build { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface-2); }
+.build.is-target { border-color: var(--brass); box-shadow: inset 0 0 0 1px var(--brass); }
+.build .row1 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.build .pct { font: 700 1.15rem var(--font-head); margin-left: auto; }
+.build .items { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.build p { margin: 4px 0 8px; font-size: .92rem; color: var(--muted); }
+.tag { font-size: .78rem; padding: 0 7px; border-radius: 999px; background: var(--brass-soft); color: var(--brass); font-weight: 700; }
+
+/* Каталог */
+.catalog-tools { display: grid; gap: 8px; margin-bottom: 10px; }
+.catalog-tools input[type="search"] { width: 100%; }
+.filters { display: flex; flex-wrap: wrap; gap: 5px; }
+.filters button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 2px 10px; cursor: pointer; font-size: .88rem; min-height: 30px; }
+.filters button[aria-pressed="true"] { background: var(--brass); color: var(--brass-ink); border-color: var(--brass); }
+.dest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.dest input { width: 80px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; max-height: 62vh; overflow-y: auto; padding: 2px; }
+@media (max-width: 920px) { .grid { max-height: none; } }
+.card {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); cursor: pointer; text-align: center; min-width: 0;
+}
+.card:hover { border-color: var(--brass); transform: translateY(-1px); }
+.card .nm { font-size: .84rem; line-height: 1.15; overflow-wrap: anywhere; }
+.card .own { position: absolute; top: 4px; right: 6px; color: var(--jade); font-weight: 700; }
+.card .meta { font-size: .72rem; color: var(--muted); }
+details.custom summary { cursor: pointer; color: var(--brass); font-weight: 700; margin-top: 10px; }
+.custom-form { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.custom-form input { flex: 1 1 140px; }
+
+/* Сравнение */
+.compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 640px) { .compare { grid-template-columns: minmax(0, 1fr); } }
+.compare .pick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.compare .pick input[type="text"] { flex: 1 1 160px; }
+.compare .pick input[type="number"] { width: 90px; }
+.verdict-line { margin-top: 14px; font: 700 1.1rem var(--font-head); }
+
+/* История и данные */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; align-items: end; }
+.form-grid label { display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
+.form-grid .full { grid-column: 1 / -1; }
+.check { flex-direction: row !important; align-items: center; gap: 6px !important; }
+.table-scroll, .shelf-scroll { position: relative; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-head); }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.stat { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: var(--surface-2); }
+.stat b { display: block; font: 700 1.5rem var(--font-head); color: var(--brass); }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.row-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.alert { padding: 8px 12px; border-radius: 8px; background: var(--madder-soft); color: var(--madder); margin-top: 10px; }
+.empty-note { color: var(--muted); font-style: italic; margin: 0; }
+
+.foot { margin: 24px 0 30px; font-size: .85rem; color: var(--muted); }
+.foot p { margin: 4px 0; }
+.toast {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); max-width: calc(100% - 32px);
+  background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 8px; box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.toast.show { opacity: 1; }
+
+@media (max-width: 520px) {
+  body { font-size: 16px; }
+  .brand h1 { font-size: 1.25rem; }
+  .controls { width: 100%; }
+  .controls .field { flex: 1 1 auto; }
+  .shelf { grid-template-columns: repeat(10, minmax(62px, 1fr)); min-width: 680px; }
+  .offer { grid-template-columns: minmax(0, 1fr); }
+  .offer > .thumb { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .card:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">B</div>
+      <div>
+        <h1>Bazaar Helper</h1>
+        <p>Подсказки по мета-сборкам The Bazaar</p>
+      </div>
+    </div>
+    <div class="controls">
+      <label class="field"><span>Герой</span><select id="hero"></select></label>
+      <div class="field"><span id="day-l">День</span>
+        <div class="stepper" role="group" aria-labelledby="day-l">
+          <button type="button" data-act="step" data-k="day" data-d="-1" aria-label="День меньше">−</button>
+          <input id="day" type="number" min="1" max="40" inputmode="numeric" aria-labelledby="day-l">
+          <button type="button" data-act="step" data-k="day" data-d="1" aria-label="День больше">+</button>
+        </div>
+      </div>
+      <div class="field"><span id="gold-l">Золото</span>
+        <div class="stepper" role="group" aria-labelledby="gold-l">
+          <button type="button" data-act="step" data-k="gold" data-d="-1" aria-label="Золота меньше">−</button>
+          <input id="gold" type="number" min="0" max="9999" inputmode="numeric" aria-labelledby="gold-l">
+          <button type="button" data-act="step" data-k="gold" data-d="1" aria-label="Золота больше">+</button>
+        </div>
+      </div>
+      <label class="field"><span>Цель сборки</span><select id="target"></select></label>
+      <div class="field"><span id="theme-l">Тема</span>
+        <div class="seg" role="group" aria-labelledby="theme-l" id="theme">
+          <button type="button" data-act="theme" data-v="system">система</button>
+          <button type="button" data-act="theme" data-v="light">светлая</button>
+          <button type="button" data-act="theme" data-v="dark">тёмная</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="notice">Программа не взаимодействует с игрой: все предметы вы вводите сами. Рекомендации — подсказка по данным гайда, а не гарантия победы.</p>
+
+  <nav class="tabs" role="tablist" aria-label="Разделы">
+    <button type="button" role="tab" id="tab-run" aria-controls="p-run" data-act="tab" data-v="run">Забег</button>
+    <button type="button" role="tab" id="tab-compare" aria-controls="p-compare" data-act="tab" data-v="compare">Сравнить</button>
+    <button type="button" role="tab" id="tab-history" aria-controls="p-history" data-act="tab" data-v="history">История</button>
+    <button type="button" role="tab" id="tab-data" aria-controls="p-data" data-act="tab" data-v="data">Данные</button>
+  </nav>
+
+  <!-- Забег -->
+  <section id="p-run" role="tabpanel" aria-labelledby="tab-run">
+    <div class="layout">
+      <div class="main">
+        <section class="panel" aria-labelledby="h-hints">
+          <h2 id="h-hints" class="sr-only">Подсказки</h2>
+          <ul class="hints" id="hints"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="h-board">
+          <div class="panel-head"><h2 id="h-board">Доска</h2><span class="muted small" id="board-usage"></span></div>
+          <div class="shelf-scroll"><div class="shelf" id="board"></div></div>
+          <div class="shelf-meta muted" id="board-meta"></div>
+        </section>
+
+        <section class="panel o-offers" aria-labelledby="h-offers">
+          <div class="panel-head"><h2 id="h-offers">Торговец предлагает</h2>
+            <button type="button" class="btn tiny" data-act="clear-offers">очистить</button></div>
+          <div class="offers" id="offers"></div>
+        </section>
+
+        <section class="panel o-stash" aria-labelledby="h-stash">
+          <div class="panel-head"><h2 id="h-stash">Стеш</h2></div>
+          <div class="chips" id="stash"></div>
+        </section>
+
+        <section class="panel o-builds" aria-labelledby="h-builds">
+          <div class="panel-head"><h2 id="h-builds">Сборки и прогресс</h2><span class="muted small">учитываются доска и стеш</span></div>
+          <div class="builds" id="builds"></div>
+        </section>
+      </div>
+
+      <aside class="panel side" aria-labelledby="h-cat">
+        <div class="panel-head"><h2 id="h-cat">Каталог</h2><span class="muted small" id="cat-count"></span></div>
+        <div class="catalog-tools">
+          <label class="sr-only" for="search">Поиск предмета</label>
+          <input id="search" type="search" placeholder="Поиск… (Enter — добавить первый)" autocomplete="off">
+          <div class="filters" id="filters" role="group" aria-label="Фильтр каталога"></div>
+          <div class="dest">
+            <span class="small muted" id="dest-l">Куда добавлять</span>
+            <div class="seg" role="group" aria-labelledby="dest-l" id="dest">
+              <button type="button" data-act="dest" data-v="board">Доска</button>
+              <button type="button" data-act="dest" data-v="offers">Торговец</button>
+              <button type="button" data-act="dest" data-v="stash">Стеш</button>
+            </div>
+            <label class="small" id="price-wrap">цена <input id="price" type="number" min="0" inputmode="numeric" placeholder="—"></label>
+          </div>
+        </div>
+        <div class="grid" id="catalog"></div>
+        <details class="custom">
+          <summary>Добавить свой предмет</summary>
+          <form class="custom-form" id="custom-form">
+            <label class="sr-only" for="custom-name">Название</label>
+            <input id="custom-name" type="text" placeholder="Название, как в игре" required maxlength="60">
+            <label class="sr-only" for="custom-size">Размер</label>
+            <select id="custom-size">
+              <option value="">размер?</option><option value="S">S — 1 слот</option><option value="M">M — 2 слота</option><option value="L">L — 3 слота</option>
+            </select>
+            <button class="btn primary" type="submit">Добавить</button>
+          </form>
+          <p class="small muted">Своих предметов нет в гайде — программа не знает их ценность, оценивайте сами.</p>
+        </details>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Сравнить -->
+  <section id="p-compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
+    <div class="panel">
+      <div class="panel-head"><h2>Сравнить два предмета</h2><span class="muted small">с учётом текущего забега</span></div>
+      <datalist id="all-items"></datalist>
+      <div class="compare">
+        <div>
+          <div class="pick">
+            <label class="sr-only" for="cmp-a">Первый предмет</label>
+            <input id="cmp-a" type="text" list="all-items" placeholder="Первый предмет">
+            <label class="sr-only" for="cmp-a-price">Цена первого</label>
+            <input id="cmp-a-price" type="number" min="0" placeholder="цена">
+          </div>
+          <div id="cmp-a-out"></div>
+        </div>
+        <div>
+          <div class="pick">
+            <label class="sr-only" for="cmp-b">Второй предмет</label>
+            <input id="cmp-b" type="text" list="all-items" placeholder="Второй предмет">
+            <label class="sr-only" for="cmp-b-price">Цена второго</label>
+            <input id="cmp-b-price" type="number" min="0" placeholder="цена">
+          </div>
+          <div id="cmp-b-out"></div>
+        </div>
+      </div>
+      <p class="verdict-line" id="cmp-verdict" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- История -->
+  <section id="p-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+    <div class="panel">
+      <h2>Завершить забег</h2>
+      <form class="form-grid" id="finish-form" style="margin-top:10px">
+        <label>Сборка<select id="fin-build"></select></label>
+        <label>Побед<input id="fin-wins" type="number" min="0" max="20" value="0" required></label>
+        <label class="full">Заметки<textarea id="fin-notes" maxlength="500" placeholder="Что сработало, что нет"></textarea></label>
+        <label class="check"><input id="fin-new" type="checkbox" checked> начать новый забег</label>
+        <div><button class="btn primary" type="submit">Сохранить в историю</button></div>
+      </form>
+    </div>
+    <div class="panel">
+      <h2>Статистика по сборкам</h2>
+      <div class="stats" id="stats" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <h2>Забеги</h2>
+      <div class="table-scroll" style="margin-top:10px" id="history"></div>
+    </div>
+  </section>
+
+  <!-- Данные -->
+  <section id="p-data" role="tabpanel" aria-labelledby="tab-data" hidden>
+    <div class="panel">
+      <h2>Данные сборок</h2>
+      <dl class="kv" id="data-info" style="margin-top:10px"></dl>
+      <div id="data-alert"></div>
+    </div>
+    <div class="panel">
+      <h2>Экспорт и импорт</h2>
+      <p class="small muted">Файл JSON со сборками, текущим забегом, историей и своими предметами. Данные никуда не отправляются — всё хранится только в этом браузере.</p>
+      <div class="row-btns">
+        <button type="button" class="btn primary" data-act="export">Экспорт в JSON</button>
+        <label class="btn">Импорт из JSON<input id="import" type="file" accept="application/json,.json" class="sr-only"></label>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Сброс</h2>
+      <div class="row-btns">
+        <button type="button" class="btn" data-act="reset-data">Вернуть встроенные данные сборок</button>
+        <button type="button" class="btn danger" data-act="reset-run">Начать забег заново</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>Источник данных: <a href="https://mobalytics.gg/the-bazaar/guides/meta-builds" rel="noopener noreferrer" target="_blank">Mobalytics — Meta Builds</a>. Картинки предметов загружаются с CDN Mobalytics.</p>
+    <p>Неофициальный фан-помощник, не связан с Tempo Storm. Не читает экран, память и файлы игры и не управляет вводом.</p>
+  </footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+const STORE_KEY = 'bazaarHelper.v2';
+const IMG_BASE = 'https://cdn.mobalytics.gg/assets/bazaar/images/cards_guid/';
+const STALE_DAYS = 45;
+
+const DEFAULT_DATA = {
+  version: 'S19-2026-10-12',
+  season: 19,
+  updated: '2026-10-12',
+  source: 'https://mobalytics.gg/the-bazaar/guides/meta-builds',
+  board_slots: 10,
+  sizes: { S: 1, M: 2, L: 3 },
+  heroes: {
+    Pygmalien: {
+      archetypes: [
+        {
+          id: 'pygs_gym',
+          name: "Pyg's Gym",
+          summary_ru: 'Одна из самых надёжных сборок Pyg: сильный бафф урона в начале боя, быстро заканчивает схватки. Jabalian Drum играет похоже и служит планом Б, если Pyg\'s Gym не нашёлся.',
+          items: [
+            { name: "Pyg's Gym", size: 'L', role: 'core', img: '3d185981-0b60-47ce-9ed3-58be5d7b2737' },
+            { name: 'Tusked Helm', size: 'S', role: 'key', img: 'aa97a75d-3bdf-4f1b-bc2b-457375e31e0f' },
+            { name: 'Wrist Warrior', size: 'S', role: 'key', img: 'ac05b4d0-9b91-44c9-a4ff-d5606df09775%20(1)' },
+            { name: 'Piggles Launcher', size: 'M', role: 'key', img: 'd2d9344d-ee1e-4e54-9d84-af19f1d5e022' },
+            { name: 'Yo-Yo', size: 'S', role: 'key', img: '84b74f1e-0960-4c71-bb4f-d35e114250c2' },
+            { name: 'Haladie', size: 'S', role: 'key', img: 'a490a838-37ed-4812-88fa-9e9a88d2eb8d' },
+            { name: 'Dragon Tooth', size: 'S', role: 'key', img: '3b32361e-2ddc-47b6-bcce-0ac560cb407b' }
+          ],
+          alternatives: [
+            { name: 'Jabalian Drum', size: null, role: 'alt', replaces: "Pyg's Gym", img: '9ab4ba04-0c08-4374-b86e-e94dcaaca334', note_ru: "План Б вместо Pyg's Gym" }
+          ]
+        },
+        {
+          id: 'vineyard',
+          name: 'Vineyard',
+          summary_ru: 'Архетип на Slow и лечение. Обычно побеждает через Golf Clubs. Сочетает атаку, защиту и немного контроля. Если на Vineyard выпал атакующий энчант, Golf Clubs и Textiles можно заменить утилитой вроде Luxury Tents.',
+          items: [
+            { name: 'Vineyard', size: 'L', role: 'core', img: '2fdde51e-5bf5-4136-b86f-3f83053cbf25' },
+            { name: 'Golf Clubs', size: 'M', role: 'key', img: '26621cbf-809d-4522-ad24-34443af96f27', note_ru: 'условие победы' },
+            { name: 'Textiles', size: 'M', role: 'key', img: 'b20bdd25-921e-490d-a28e-599ac70d15f7' },
+            { name: 'Succulents', size: 'S', role: 'key', img: '96e51b95-eaab-40ea-9a89-381727ce2434' },
+            { name: 'Bandages', size: 'S', role: 'key', img: '09132149-783d-4d5a-900c-31135bffab44' },
+            { name: 'Uwashiwali Bird', size: 'S', role: 'key', img: '54c74b82-0a7d-4dab-a335-f3b0b8b2157c' }
+          ],
+          alternatives: [
+            { name: 'Luxury Tents', size: null, role: 'alt', img: '3b1e3858-93d4-45c8-892b-b66aec1b14a9', note_ru: 'Утилита вместо Golf Clubs/Textiles, если у Vineyard атакующий энчант' }
+          ]
+        },
+        {
+          id: 'private_hot_springs',
+          name: 'Private Hot Springs',
+          summary_ru: 'Частый Burn с заморозкой на 3 секунды, способный запереть доску соперника. Наказывает сборки, которые не убивают за один удар; Regen гасит чужой урон со временем.',
+          items: [
+            { name: 'Private Hot Springs', size: 'L', role: 'core', img: '2e0be4f0-0472-444a-a541-09f1ba464c64' },
+            { name: 'Ice Cream Truck', size: 'L', role: 'key', img: '012658f4-b289-4f10-917c-a9a1f3f9ca03' },
+            { name: 'Cold Room', size: 'M', role: 'key', img: '6546e26d-d3a2-4b57-96ca-357f4be5c375' },
+            { name: 'Snow Globe', size: 'M', role: 'key', img: '4680e750-4ea4-421a-b486-194c805ad6a8' }
+          ],
+          alternatives: []
+        }
+      ],
+      economy_items: [
+        { name: 'Loupe', size: null, note_ru: 'Экономика (из старых гайдов, проверьте актуальность)' },
+        { name: 'Rewards Card', size: null, note_ru: 'Экономика (из старых гайдов, проверьте актуальность)' },
+        { name: 'ATM', size: null, note_ru: 'Экономика (из старых гайдов, проверьте актуальность)' },
+        { name: 'Cash Register', size: null, note_ru: 'Даёт Spare Change каждый день (из старых гайдов, проверьте актуальность)' }
+      ]
+    }
+  }
+};
+
+const ROLE_WEIGHT = { core: 3, key: 1 };            // вес в прогрессе архетипа
+const ROLE_VALUE = { core: 1, key: 0.75, alt: 0.7 }; // ценность предмета для архетипа
+const ROLE_LABEL = { core: 'ядро', key: 'ключевой', alt: 'альтернатива' };
+const TAKE = 'Брать', MAYBE = 'Зависит', SKIP = 'Пропустить';
+
+// ---------- хранение ----------
+function defaultRun(hero) {
+  return { hero, day: 1, gold: 0, target: '', board: [], stash: [], offers: [] };
+}
+function validData(d) {
+  return d && typeof d === 'object' && d.heroes && typeof d.heroes === 'object' &&
+    Object.values(d.heroes).every(h => h && Array.isArray(h.archetypes));
+}
+function load() {
+  const s = { data: null, run: null, history: [], customItems: [], theme: 'system', ui: { tab: 'run', dest: 'board', filter: 'all' } };
+  let raw = null;
+  try { raw = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { raw = null; }
+  if (raw && typeof raw === 'object') {
+    if (validData(raw.data)) s.data = raw.data;
+    if (raw.run && typeof raw.run === 'object') s.run = raw.run;
+    if (Array.isArray(raw.history)) s.history = raw.history;
+    if (Array.isArray(raw.customItems)) s.customItems = raw.customItems;
+    if (['system', 'light', 'dark'].includes(raw.theme)) s.theme = raw.theme;
+    if (raw.ui && typeof raw.ui === 'object') Object.assign(s.ui, raw.ui);
+  }
+  s.run = fixRun(s.run, s.data || DEFAULT_DATA);
+  return s;
+}
+function fixRun(run, d) {
+  const heroes = Object.keys(d.heroes);
+  const r = Object.assign(defaultRun(heroes[0]), run || {});
+  if (!d.heroes[r.hero]) r.hero = heroes[0];
+  r.day = clampInt(r.day, 1, 40, 1);
+  r.gold = clampInt(r.gold, 0, 9999, 0);
+  for (const k of ['board', 'stash']) r[k] = Array.isArray(r[k]) ? r[k].filter(x => typeof x === 'string') : [];
+  r.offers = Array.isArray(r.offers) ? r.offers.filter(o => o && typeof o.name === 'string')
+    .map(o => ({ name: o.name, price: o.price == null || o.price === '' ? null : clampInt(o.price, 0, 9999, 0) })) : [];
+  if (!d.heroes[r.hero].archetypes.some(a => a.id === r.target)) r.target = '';
+  return r;
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) { /* хранилище недоступно — работаем без него */ }
+}
+function clampInt(v, min, max, def) {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : def;
+}
+
+let S = load();
+const data = () => S.data || DEFAULT_DATA;
+
+// ---------- справочники ----------
+const norm = s => String(s).trim().toLowerCase().replace(/\s+/g, ' ');
+const heroData = () => data().heroes[S.run.hero];
+const archetypes = () => heroData().archetypes || [];
+const sizes = () => data().sizes || { S: 1, M: 2, L: 3 };
+const slotsTotal = () => data().board_slots || 10;
+
+function itemIndex() {
+  const idx = new Map();
+  for (const a of archetypes()) {
+    for (const it of [...a.items, ...(a.alternatives || [])]) {
+      const k = norm(it.name);
+      if (!idx.has(k)) idx.set(k, []);
+      idx.get(k).push({ a, it });
+    }
+  }
+  return idx;
+}
+function ecoIndex() {
+  return new Map((heroData().economy_items || []).map(i => [norm(i.name), i]));
+}
+// Все предметы героя для каталога: сборки, экономика, свои
+function catalog() {
+  const map = new Map();
+  for (const [k, list] of itemIndex()) {
+    const first = list[0].it;
+    map.set(k, {
+      name: first.name,
+      size: (list.find(x => x.it.size) || {}).it?.size || null,
+      img: (list.find(x => x.it.img) || {}).it?.img || null,
+      archs: [...new Set(list.map(x => x.a.id))],
+      core: list.some(x => x.it.role === 'core'),
+      eco: false, custom: false
+    });
+  }
+  for (const [k, e] of ecoIndex()) {
+    if (!map.has(k)) map.set(k, { name: e.name, size: e.size || null, img: e.img || null, archs: [], core: false, eco: true, custom: false });
+  }
+  for (const c of S.customItems) {
+    const k = norm(c.name);
+    if (!map.has(k)) map.set(k, { name: c.name, size: c.size || null, img: null, archs: [], core: false, eco: false, custom: true });
+  }
+  return map;
+}
+function info(name) {
+  return catalog().get(norm(name)) || { name, size: null, img: null, archs: [], core: false, eco: false, custom: true };
+}
+function itemSlots(name) {
+  const sz = info(name).size;
+  return sz ? (sizes()[sz] || null) : null;
+}
+function ownedSet(run) {
+  return new Set([...run.board, ...run.stash].map(norm));
+}
+function dataAgeDays() {
+  const t = Date.parse(data().updated);
+  if (!Number.isFinite(t)) return null;
+  const today = new Date();
+  const utcToday = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  return Math.floor((utcToday - t) / 86400000);
+}
+
+// ---------- анализ ----------
+function boardUsage(run) {
+  let used = 0;
+  const unknown = [];
+  for (const n of run.board) {
+    let s = itemSlots(n);
+    if (s == null) { unknown.push(n); s = 1; }
+    used += s;
+  }
+  return { used, unknown };
+}
+
+function matches(run) {
+  const owned = ownedSet(run);
+  const res = archetypes().map(a => {
+    let total = 0, have = 0;
+    const got = [], miss = [];
+    const subs = new Set((a.alternatives || [])
+      .filter(alt => alt.replaces && owned.has(norm(alt.name))).map(alt => norm(alt.replaces)));
+    for (const it of a.items) {
+      const w = ROLE_WEIGHT[it.role] ?? 1;
+      total += w;
+      const n = norm(it.name);
+      if (owned.has(n)) { have += w; got.push(it.name); }
+      else if (subs.has(n)) { have += w * 0.8; got.push(it.name + ' (замена)'); }
+      else miss.push(it.name);
+    }
+    for (const alt of a.alternatives || []) if (owned.has(norm(alt.name))) got.push(alt.name + ' (альт.)');
+    return { id: a.id, name: a.name, progress: total ? have / total : 0, got, miss, a };
+  });
+  return res.sort((x, y) => y.progress - x.progress);
+}
+
+function advise(run, name, price) {
+  const idx = itemIndex(), eco = ecoIndex();
+  const n = norm(name);
+  const owned = ownedSet(run);
+  const progress = Object.fromEntries(matches(run).map(m => [m.id, m.progress]));
+  const reasons = [];
+  let best;
+
+  if (idx.has(n)) {
+    best = 0;
+    const archs = new Set();
+    for (const { a, it } of idx.get(n)) {
+      archs.add(a.id);
+      const prog = progress[a.id] || 0;
+      let v = (ROLE_VALUE[it.role] ?? 0.5) * (0.5 + 0.7 * prog);
+      if (run.day <= 4 && prog === 0) v = Math.max(v, 0.45); // в начале забега всё ещё открыто
+      let r = `${a.name}: ${ROLE_LABEL[it.role] || it.role}, сборка собрана на ${Math.round(prog * 100)}%`;
+      if (run.target && a.id !== run.target) { v *= 0.6; r += ' (не ваша цель)'; }
+      if (run.day >= 9 && prog < 0.25) { v *= 0.75; r += '; поздно начинать с нуля'; }
+      if (it.note_ru) r += `; ${it.note_ru}`;
+      reasons.push(r);
+      best = Math.max(best, Math.min(v, 1));
+    }
+    if (archs.size > 1) {
+      best += 0.05 * (archs.size - 1);
+      reasons.push('Подходит сразу в несколько сборок');
+    }
+  } else if (eco.has(n)) {
+    best = run.day <= 4 ? 0.6 : run.day <= 7 ? 0.45 : 0.25;
+    reasons.push(eco.get(n).note_ru || 'Экономика');
+    if (run.day > 7) reasons.push('Экономика к концу забега ценится меньше');
+  } else {
+    return { name, score: 20, verdict: SKIP, reasons: ['Нет в данных гайда — оцените сами'], unknown: true };
+  }
+
+  if (owned.has(n)) { best *= 0.6; reasons.push('Такой предмет уже есть'); }
+  const size = itemSlots(name);
+  if (size) {
+    const free = slotsTotal() - boardUsage(run).used;
+    if (size > free) { best *= 0.9; reasons.push(`Нужно слотов: ${size}, свободно: ${Math.max(free, 0)} — придётся что-то убрать`); }
+  } else {
+    reasons.push('Размер неизвестен');
+  }
+  if (price != null && price > run.gold) { best *= 0.85; reasons.push(`Не хватает золота (${price} > ${run.gold})`); }
+
+  const score = Math.max(0, Math.min(100, Math.round(best * 100)));
+  const verdict = score >= 65 ? TAKE : score >= 40 ? MAYBE : SKIP;
+  return { name, score, verdict, reasons };
+}
+
+function hints(run) {
+  const h = [];
+  const ms = matches(run);
+  if (!ms.length) return h;
+  const top = ms[0];
+  const missText = m => m.miss.length ? m.miss.join(', ') : 'ничего — сборка собрана';
+  if (run.target) {
+    const tgt = ms.find(m => m.id === run.target);
+    if (tgt && run.day >= 7 && tgt.progress < 0.3 && top.id !== tgt.id && top.progress > tgt.progress) {
+      h.push({ warn: true, text: `Цель «${tgt.name}» собрана на ${Math.round(tgt.progress * 100)}%. «${top.name}» ближе (${Math.round(top.progress * 100)}%) — подумайте о смене направления.` });
+    } else if (tgt) {
+      h.push({ text: `Цель «${tgt.name}»: ${Math.round(tgt.progress * 100)}%. Не хватает: ${missText(tgt)}.` });
+    }
+  } else if (top.progress === 0) {
+    const cores = archetypes().map(a => (a.items.find(i => i.role === 'core') || {}).name).filter(Boolean);
+    h.push({ text: (run.day >= 5 ? 'Ни одна мета-сборка пока не начата. ' : 'Начало забега: ') + 'ищите ядро — ' + cores.join(', ') + '.' });
+  } else {
+    h.push({ text: `Лучше всего подходит «${top.name}» (${Math.round(top.progress * 100)}%). Не хватает: ${missText(top)}.` });
+  }
+  const { used, unknown } = boardUsage(run);
+  if (used > slotsTotal()) h.push({ warn: true, text: `На доске ${used} слотов из ${slotsTotal()} — что-то лишнее, проверьте список.` });
+  if (unknown.length) h.push({ warn: true, text: 'Размер неизвестен (считаю как 1 слот): ' + unknown.join(', ') + '.' });
+  return h;
+}
+
+// ---------- отрисовка ----------
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const initials = name => String(name).replace(/['’]s\b/gi, '').split(/[\s\-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
+const vClass = v => v === TAKE ? 'v-take' : v === MAYBE ? 'v-maybe' : 'v-skip';
+
+function thumb(name, cls = '') {
+  const it = info(name);
+  const img = it.img ? `<img src="${IMG_BASE}${esc(it.img)}.avif" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">` : '';
+  return `<span class="thumb ${cls}" aria-hidden="true"><span class="ini">${esc(initials(name))}</span>${img}</span>`;
+}
+function sizeBadge(name) {
+  const sz = info(name).size;
+  return `<span class="size" title="${sz ? 'слотов: ' + sizes()[sz] : 'размер неизвестен'}">${sz || '?'}</span>`;
+}
+
+function renderHeader() {
+  const d = data();
+  $('hero').innerHTML = Object.keys(d.heroes).map(h => `<option value="${esc(h)}"${h === S.run.hero ? ' selected' : ''}>${esc(h)}</option>`).join('');
+  $('target').innerHTML = '<option value="">любая</option>' + archetypes().map(a => `<option value="${esc(a.id)}"${a.id === S.run.target ? ' selected' : ''}>${esc(a.name)}</option>`).join('');
+  if (document.activeElement !== $('day')) $('day').value = S.run.day;
+  if (document.activeElement !== $('gold')) $('gold').value = S.run.gold;
+  document.querySelectorAll('#theme button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.theme)));
+  if (S.theme === 'system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', S.theme);
+}
+
+function renderTabs() {
+  for (const t of ['run', 'compare', 'history', 'data']) {
+    const on = S.ui.tab === t;
+    $('tab-' + t).setAttribute('aria-selected', String(on));
+    $('tab-' + t).tabIndex = on ? 0 : -1;
+    $('p-' + t).hidden = !on;
+  }
+}
+
+function renderHints() {
+  const h = hints(S.run);
+  $('hints').innerHTML = h.map(x => `<li${x.warn ? ' class="warn"' : ''}>${esc(x.text)}</li>`).join('');
+}
+
+function renderBoard() {
+  const total = slotsTotal();
+  const { used } = boardUsage(S.run);
+  let filled = 0;
+  const cells = S.run.board.map((n, i) => {
+    const sz = itemSlots(n) || 1;
+    filled += sz;
+    const over = filled > total;
+    return `<div class="slot item${over ? ' over' : ''}" style="grid-column: span ${Math.min(sz, 10)}">
+      ${thumb(n, 'lg')}<span class="nm">${esc(n)}</span>${sizeBadge(n)}
+      <span class="acts">
+        <button type="button" class="btn tiny" data-act="board-to-stash" data-i="${i}" aria-label="${esc(n)}: в стеш">в стеш</button>
+        <button type="button" class="btn tiny danger" data-act="board-remove" data-i="${i}" aria-label="${esc(n)}: убрать">убрать</button>
+      </span></div>`;
+  });
+  for (let k = used; k < total; k++) cells.push('<div class="slot empty" aria-hidden="true"></div>');
+  $('board').innerHTML = cells.join('');
+  $('board-usage').textContent = `занято ${used} из ${total} слотов`;
+  $('board-meta').innerHTML = S.run.board.length ? '' : '<span>Пусто. Выберите «Доска» в каталоге и нажмите на предмет.</span>';
+}
+
+function adviceCard(adv, extra = '') {
+  return `<div class="offer ${vClass(adv.verdict)}">
+    ${thumb(adv.name, 'lg')}
+    <div>
+      <div class="row1"><span class="nm">${esc(adv.name)}</span>${sizeBadge(adv.name)}<span class="verdict">${adv.verdict}</span><span class="score" aria-label="оценка ${adv.score} из 100">${adv.score}</span></div>
+      <div class="bar" aria-hidden="true"><i style="width:${adv.score}%"></i></div>
+      <ul class="reasons">${adv.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+      ${extra}
+    </div></div>`;
+}
+
+function renderOffers() {
+  if (!S.run.offers.length) {
+    $('offers').innerHTML = '<p class="empty-note">Выберите «Торговец» в каталоге, укажите цену и добавьте предметы, которые предлагают.</p>';
+    return;
+  }
+  const list = S.run.offers.map((o, i) => ({ o, i, adv: advise(S.run, o.name, o.price) }))
+    .sort((x, y) => y.adv.score - x.adv.score);
+  $('offers').innerHTML = list.map(({ o, i, adv }) => adviceCard(adv, `<div class="acts">
+      <label>цена <input type="number" min="0" value="${o.price ?? ''}" data-act="offer-price" data-i="${i}" aria-label="Цена ${esc(o.name)}"></label>
+      <button type="button" class="btn tiny primary" data-act="offer-buy" data-i="${i}">Купил</button>
+      <button type="button" class="btn tiny danger" data-act="offer-remove" data-i="${i}" aria-label="${esc(o.name)}: убрать">убрать</button>
+    </div>`)).join('');
+}
+
+function renderStash() {
+  $('stash').innerHTML = S.run.stash.length ? S.run.stash.map((n, i) => `<span class="chip">${thumb(n, 'sm')}<span>${esc(n)}</span>
+      <button type="button" class="btn tiny" data-act="stash-to-board" data-i="${i}" aria-label="${esc(n)}: на доску">на доску</button>
+      <button type="button" class="btn tiny danger" data-act="stash-remove" data-i="${i}" aria-label="${esc(n)}: убрать">убрать</button></span>`).join('')
+    : '<p class="empty-note">Стеш пуст.</p>';
+}
+
+function renderBuilds() {
+  const owned = ownedSet(S.run);
+  $('builds').innerHTML = matches(S.run).map(m => {
+    const pct = Math.round(m.progress * 100);
+    const isT = m.id === S.run.target;
+    const all = [...m.a.items, ...(m.a.alternatives || [])];
+    const thumbs = all.map(it => {
+      const has = owned.has(norm(it.name));
+      const label = `${it.name} — ${ROLE_LABEL[it.role] || it.role}${has ? ', есть' : ', нет'}`;
+      return `<span title="${esc(label)}">${thumb(it.name, 'sm' + (has ? '' : ' missing') + (it.role === 'core' ? ' core' : ''))}<span class="sr-only">${esc(label)}</span></span>`;
+    }).join('');
+    return `<div class="build${isT ? ' is-target' : ''}">
+      <div class="row1"><h3>${esc(m.name)}</h3>${isT ? '<span class="tag">цель</span>' : ''}<span class="pct">${pct}%</span></div>
+      <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
+      <div class="items">${thumbs}</div>
+      <p>${esc(m.a.summary_ru || '')}</p>
+      ${isT ? '<button type="button" class="btn tiny" data-act="target" data-v="">Снять цель</button>'
+            : `<button type="button" class="btn tiny" data-act="target" data-v="${esc(m.id)}">Сделать целью</button>`}
+    </div>`;
+  }).join('');
+}
+
+function renderFilters() {
+  const opts = [['all', 'Все'], ...archetypes().map(a => [a.id, a.name]), ['eco', 'Экономика']];
+  if (S.customItems.length) opts.push(['custom', 'Свои']);
+  if (!opts.some(o => o[0] === S.ui.filter)) S.ui.filter = 'all';
+  $('filters').innerHTML = opts.map(([v, l]) => `<button type="button" data-act="filter" data-v="${esc(v)}" aria-pressed="${v === S.ui.filter}">${esc(l)}</button>`).join('');
+  document.querySelectorAll('#dest button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S.ui.dest)));
+  $('price-wrap').hidden = S.ui.dest !== 'offers';
+}
+
+function filteredCatalog() {
+  const q = norm($('search').value || '');
+  const f = S.ui.filter;
+  return [...catalog().values()].filter(it =>
+    (f === 'all' || (f === 'eco' && it.eco) || (f === 'custom' && it.custom) || it.archs.includes(f)) &&
+    (!q || norm(it.name).includes(q))
+  ).sort((a, b) => (b.core - a.core) || a.name.localeCompare(b.name));
+}
+
+function renderCatalog() {
+  const owned = ownedSet(S.run);
+  const list = filteredCatalog();
+  const archName = Object.fromEntries(archetypes().map(a => [a.id, a.name]));
+  $('cat-count').textContent = `${list.length} шт.`;
+  $('catalog').innerHTML = list.length ? list.map(it => {
+    const has = owned.has(norm(it.name));
+    const meta = it.eco ? 'экономика' : it.custom ? 'свой' : it.archs.map(a => archName[a]).join(', ');
+    return `<button type="button" class="card" data-act="add" data-name="${esc(it.name)}" title="${esc(it.name)}${has ? ' — уже есть' : ''}">
+      ${has ? '<span class="own" aria-label="уже есть">✓</span>' : ''}${thumb(it.name)}
+      <span class="nm">${esc(it.name)}</span><span class="meta">${it.size || '?'} · ${esc(meta)}</span></button>`;
+  }).join('') : '<p class="empty-note">Ничего не найдено. Можно добавить свой предмет ниже.</p>';
+}
+
+function renderCompare() {
+  $('all-items').innerHTML = [...catalog().values()].map(it => `<option value="${esc(it.name)}">`).join('');
+  const side = k => {
+    const name = $('cmp-' + k).value.trim();
+    const pr = $('cmp-' + k + '-price').value;
+    if (!name) { $('cmp-' + k + '-out').innerHTML = '<p class="empty-note">Выберите предмет.</p>'; return null; }
+    const adv = advise(S.run, name, pr === '' ? null : clampInt(pr, 0, 9999, 0));
+    $('cmp-' + k + '-out').innerHTML = adviceCard(adv);
+    return adv;
+  };
+  const a = side('a'), b = side('b');
+  let v = '';
+  if (a && b) {
+    const diff = a.score - b.score;
+    if (norm(a.name) === norm(b.name)) v = 'Это один и тот же предмет.';
+    else if (Math.abs(diff) < 5) v = `Примерно равны (${a.score} и ${b.score}) — решайте по ситуации на доске.`;
+    else v = `Лучше «${diff > 0 ? a.name : b.name}»: на ${Math.abs(diff)} баллов выше.`;
+  }
+  $('cmp-verdict').textContent = v;
+}
+
+function renderHistory() {
+  const ms = matches(S.run);
+  const auto = ms[0] && ms[0].progress > 0 ? ms[0].id : '';
+  const pre = S.run.target || auto;
+  const sel = $('fin-build');
+  if (document.activeElement !== sel) {
+    sel.innerHTML = archetypes().map(a => `<option value="${esc(a.name)}"${a.id === pre ? ' selected' : ''}>${esc(a.name)}</option>`).join('') +
+      `<option value="Другая"${pre ? '' : ' selected'}>Другая</option>`;
+  }
+  const hist = S.history;
+  const by = {};
+  for (const r of hist) {
+    const k = r.build || 'Другая';
+    (by[k] = by[k] || []).push(Number(r.wins) || 0);
+  }
+  const keys = Object.keys(by).sort((x, y) => avg(by[y]) - avg(by[x]));
+  $('stats').innerHTML = keys.length ? keys.map(k => `<div class="stat"><span>${esc(k)}</span><b>${avg(by[k]).toFixed(1)}</b><span class="small muted">в среднем побед · забегов: ${by[k].length}</span></div>`).join('')
+    : '<p class="empty-note">Пока нет завершённых забегов.</p>';
+  $('history').innerHTML = hist.length ? `<table><thead><tr><th>Дата</th><th>Герой</th><th>Сборка</th><th>День</th><th>Побед</th><th>Заметки</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody>
+    ${hist.map((r, i) => ({ r, i })).reverse().map(({ r, i }) => `<tr><td>${esc(fmtDate(r.date))}</td><td>${esc(r.hero || '')}</td><td>${esc(r.build || '')}</td><td>${esc(r.day ?? '')}</td><td>${esc(r.wins ?? '')}</td><td>${esc(r.notes || '')}</td>
+      <td><button type="button" class="btn tiny danger" data-act="history-remove" data-i="${i}" aria-label="Удалить запись">убрать</button></td></tr>`).join('')}
+    </tbody></table>` : '<p class="empty-note">История пуста.</p>';
+}
+const avg = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return Number.isFinite(d.getTime()) ? d.toLocaleDateString('ru-RU') : String(iso || '');
+}
+
+function renderData() {
+  const d = data();
+  const age = dataAgeDays();
+  const heroesCount = Object.keys(d.heroes).length;
+  $('data-info').innerHTML = `
+    <dt>Версия</dt><dd>${esc(d.version || '—')}${S.data ? ' (импортированные)' : ' (встроенные)'}</dd>
+    <dt>Сезон</dt><dd>${esc(d.season ?? '—')}</dd>
+    <dt>Обновлено</dt><dd>${esc(d.updated ? fmtDate(d.updated) : '—')}${age != null ? ` · ${age} дн. назад` : ''}</dd>
+    <dt>Героев</dt><dd>${heroesCount}</dd>
+    <dt>Источник</dt><dd>${d.source ? `<a href="${esc(d.source)}" target="_blank" rel="noopener noreferrer">${esc(d.source)}</a>` : '—'}</dd>`;
+  $('data-alert').innerHTML = age != null && age > STALE_DAYS
+    ? `<p class="alert">Данным больше ${STALE_DAYS} дней — мета могла измениться. Сверьтесь с гайдом и импортируйте свежие данные.</p>` : '';
+}
+
+function render() {
+  renderHeader();
+  renderTabs();
+  renderHints();
+  renderBoard();
+  renderOffers();
+  renderStash();
+  renderBuilds();
+  renderFilters();
+  renderCatalog();
+  if (S.ui.tab === 'compare') renderCompare();
+  if (S.ui.tab === 'history') renderHistory();
+  if (S.ui.tab === 'data') renderData();
+  save();
+}
+
+let toastTimer = 0;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ---------- действия ----------
+const DEST_LABEL = { board: 'на доску', offers: 'к торговцу', stash: 'в стеш' };
+function addItem(name) {
+  const it = info(name);
+  const dest = S.ui.dest;
+  if (dest === 'offers') {
+    const pr = $('price').value;
+    S.run.offers.push({ name: it.name, price: pr === '' ? null : clampInt(pr, 0, 9999, 0) });
+    $('price').value = '';
+  } else {
+    S.run[dest].push(it.name);
+  }
+  render();
+  toast(`${it.name} — ${DEST_LABEL[dest]}`);
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.tagName === 'INPUT') return;
+  const act = el.dataset.act, i = Number(el.dataset.i), v = el.dataset.v;
+  const run = S.run;
+  switch (act) {
+    case 'tab':
+      S.ui.tab = v; render(); break;
+    case 'theme':
+      S.theme = v; render(); break;
+    case 'step': {
+      const k = el.dataset.k;
+      run[k] = k === 'day' ? clampInt(run.day + Number(el.dataset.d), 1, 40, 1) : clampInt(run.gold + Number(el.dataset.d), 0, 9999, 0);
+      render(); break;
+    }
+    case 'dest':
+      S.ui.dest = v; render(); if (v === 'offers') $('price').focus(); break;
+    case 'filter':
+      S.ui.filter = v; render(); break;
+    case 'add':
+      addItem(el.dataset.name); break;
+    case 'target':
+      run.target = v; render(); break;
+    case 'board-to-stash':
+      run.stash.push(...run.board.splice(i, 1)); render(); break;
+    case 'board-remove':
+      run.board.splice(i, 1); render(); break;
+    case 'stash-to-board':
+      run.board.push(...run.stash.splice(i, 1)); render(); break;
+    case 'stash-remove':
+      run.stash.splice(i, 1); render(); break;
+    case 'offer-remove':
+      run.offers.splice(i, 1); render(); break;
+    case 'offer-buy': {
+      const [o] = run.offers.splice(i, 1);
+      if (!o) break;
+      if (o.price != null) run.gold = Math.max(0, run.gold - o.price);
+      run.board.push(o.name);
+      render();
+      toast(`Куплено: ${o.name}` + (o.price != null ? `, −${o.price} золота` : ''));
+      break;
+    }
+    case 'clear-offers':
+      run.offers = []; render(); break;
+    case 'history-remove':
+      if (confirm('Удалить эту запись из истории?')) { S.history.splice(i, 1); render(); }
+      break;
+    case 'export': exportJson(); break;
+    case 'reset-data':
+      if (confirm('Вернуть встроенные данные сборок? Импортированные данные будут заменены.')) {
+        S.data = null; S.run = fixRun(S.run, data()); render(); toast('Встроенные данные восстановлены');
+      }
+      break;
+    case 'reset-run':
+      if (confirm('Начать забег заново? Доска, стеш и предложения торговца очистятся.')) newRun();
+      break;
+  }
+});
+
+function newRun() {
+  S.run = defaultRun(S.run.hero);
+  render();
+  toast('Новый забег');
+}
+
+$('hero').addEventListener('change', e => {
+  S.run = fixRun(Object.assign(defaultRun(e.target.value), { day: S.run.day, gold: S.run.gold }), data());
+  S.ui.filter = 'all';
+  render();
+});
+$('target').addEventListener('change', e => { S.run.target = e.target.value; render(); });
+for (const k of ['day', 'gold']) {
+  $(k).addEventListener('change', e => {
+    S.run[k] = k === 'day' ? clampInt(e.target.value, 1, 40, 1) : clampInt(e.target.value, 0, 9999, 0);
+    e.target.value = S.run[k];
+    render();
+  });
+}
+$('search').addEventListener('input', renderCatalog);
+$('search').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const first = filteredCatalog()[0];
+  if (first) { addItem(first.name); $('search').value = ''; renderCatalog(); }
+  else if ($('search').value.trim()) toast('Не найдено — добавьте как свой предмет');
+});
+$('price').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('search').focus(); } });
+document.addEventListener('change', e => {
+  if (e.target.dataset.act === 'offer-price') {
+    const o = S.run.offers[Number(e.target.dataset.i)];
+    if (o) { o.price = e.target.value === '' ? null : clampInt(e.target.value, 0, 9999, 0); render(); }
+  }
+});
+$('custom-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('custom-name').value.trim().replace(/\s+/g, ' ');
+  if (!name) return;
+  const size = $('custom-size').value || null;
+  if (!catalog().has(norm(name))) S.customItems.push({ name, size });
+  $('custom-name').value = '';
+  $('custom-size').value = '';
+  addItem(name);
+});
+for (const id of ['cmp-a', 'cmp-b', 'cmp-a-price', 'cmp-b-price']) $(id).addEventListener('input', renderCompare);
+
+$('finish-form').addEventListener('submit', e => {
+  e.preventDefault();
+  S.history.push({
+    date: new Date().toISOString(),
+    hero: S.run.hero,
+    build: $('fin-build').value,
+    day: S.run.day,
+    wins: clampInt($('fin-wins').value, 0, 20, 0),
+    notes: $('fin-notes').value.trim(),
+    board: [...S.run.board]
+  });
+  $('fin-wins').value = 0;
+  $('fin-notes').value = '';
+  if ($('fin-new').checked) S.run = defaultRun(S.run.hero);
+  render();
+  toast('Забег сохранён в историю');
+});
+
+// Клавиатурная навигация по вкладкам
+$('tab-run').parentElement.addEventListener('keydown', e => {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+  const tabs = ['run', 'compare', 'history', 'data'];
+  let k = tabs.indexOf(S.ui.tab);
+  k = e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (k + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+  S.ui.tab = tabs[k];
+  render();
+  $('tab-' + tabs[k]).focus();
+  e.preventDefault();
+});
+
+function exportJson() {
+  const payload = {
+    app: 'bazaar-helper', format: 2, exported: new Date().toISOString(),
+    data: data(), run: S.run, history: S.history, customItems: S.customItems
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `bazaar-helper-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+}
+
+$('import').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  let obj;
+  try { obj = JSON.parse(await file.text()); } catch (err) { alert('Не удалось прочитать JSON.'); return; }
+  // Принимаем и полный экспорт, и голый файл данных сборок (как builds.json)
+  const d = validData(obj) ? obj : validData(obj && obj.data) ? obj.data : null;
+  const parts = [];
+  if (d) parts.push('данные сборок');
+  if (obj && obj.run) parts.push('текущий забег');
+  if (obj && Array.isArray(obj.history)) parts.push(`историю (${obj.history.length})`);
+  if (obj && Array.isArray(obj.customItems)) parts.push('свои предметы');
+  if (!parts.length) { alert('В файле нет данных Bazaar Helper.'); return; }
+  if (!confirm('Импортировать: ' + parts.join(', ') + '? Текущие значения будут заменены.')) return;
+  if (d) S.data = JSON.stringify(d) === JSON.stringify(DEFAULT_DATA) ? null : d;
+  if (obj.run) S.run = obj.run;
+  if (Array.isArray(obj.history)) S.history = obj.history;
+  if (Array.isArray(obj.customItems)) S.customItems = obj.customItems.filter(c => c && typeof c.name === 'string');
+  S.run = fixRun(S.run, data());
+  render();
+  toast('Импорт выполнен');
+});
+
+window.addEventListener('storage', e => { if (e.key === STORE_KEY) { S = load(); render(); } });
+
+render();
+</script>
+</body>
+</html>
