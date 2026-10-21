@@ -278,6 +278,9 @@ textarea { min-height: 64px; width: 100%; resize: vertical; }
 .v-none .verdict { background: var(--surface); color: var(--muted); border: 1px dashed var(--line); }
 .v-none .score { color: var(--muted); }
 .reasons { margin: 0; padding-left: 18px; font-size: .9rem; color: var(--muted); }
+.reasons li.penalty { color: var(--madder); }
+.more-reasons > summary { cursor: pointer; font-size: .85rem; color: var(--muted); padding-left: 18px; }
+.more-reasons > summary:hover { color: var(--ink); }
 .offer .acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
 .offer .acts label { display: inline-flex; align-items: center; gap: 4px; font-size: .88rem; }
 .offer .acts input { width: 70px; min-height: 30px; }
@@ -1163,9 +1166,28 @@ function adviceCard(adv, extra = '') {
     <div>
       <div class="row1"><span class="nm">${esc(adv.name)}</span>${sizeBadge(adv.name)}<span class="verdict">${adv.verdict}</span>${adv.unknown ? '<span class="score" aria-label="оценки нет">—</span>' : `<span class="score" aria-label="оценка ${adv.score} из 100">${adv.score}</span>`}</div>
       <div class="bar" aria-hidden="true"><i style="width:${adv.unknown ? 0 : adv.score}%"></i></div>
-      <ul class="reasons">${adv.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+      ${reasonsHTML(adv)}
       ${extra}
     </div></div>`;
+}
+
+// Коротко: главная причина и штрафы видны сразу, остальное — под «ещё N»
+const PENALTY = /^(Не хватает золота|Нужно слотов|Такой предмет уже есть)/;
+const openReasons = new Set();
+function reasonsHTML(adv) {
+  const warns = adv.reasons.filter(r => PENALTY.test(r));
+  // Строки сборок — по убыванию прогресса, чтобы главной была самая собранная
+  const pct = r => +((r.match(/собрана на (\d+)%/) || [])[1] ?? -1);
+  const archLines = adv.reasons.filter(r => pct(r) >= 0).sort((x, y) => pct(y) - pct(x));
+  const rest = archLines.concat(adv.reasons.filter(r => !PENALTY.test(r) && pct(r) < 0));
+  const li = (r, cls = '') => `<li${cls ? ` class="${cls}"` : ''}>${esc(r)}</li>`;
+  const head = rest.length ? rest[0] + (archLines.length > 1 ? ` · ещё сборок: ${archLines.length - 1}` : '') : null;
+  const main = (head ? [li(head)] : []).concat(warns.map(r => li(r, 'penalty'))).join('');
+  const more = rest.slice(1);
+  return `<ul class="reasons">${main}</ul>` + (more.length
+    ? `<details class="more-reasons" data-name="${esc(adv.name)}"${openReasons.has(norm(adv.name)) ? ' open' : ''}>
+        <summary>ещё ${more.length}</summary><ul class="reasons">${more.map(r => li(r)).join('')}</ul></details>`
+    : '');
 }
 
 function renderOffers() {
@@ -1519,6 +1541,10 @@ $('target').addEventListener('change', e => { S.run.target = e.target.value; ren
 $('filter-build').addEventListener('change', e => { S.ui.filter = e.target.value || 'all'; render(); });
 document.addEventListener('toggle', e => {
   if (e.target.id === 'more-builds') { S.ui.moreBuilds = e.target.open; save(); }
+  if (e.target.classList.contains('more-reasons')) {
+    const k = norm(e.target.dataset.name);
+    if (e.target.open) openReasons.add(k); else openReasons.delete(k);
+  }
 }, true);
 for (const k of ['day', 'gold']) {
   $(k).addEventListener('change', e => {
