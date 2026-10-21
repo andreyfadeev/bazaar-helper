@@ -275,6 +275,8 @@ textarea { min-height: 64px; width: 100%; resize: vertical; }
 .v-take .score { color: var(--jade); }
 .v-maybe .score { color: var(--saffron); }
 .v-skip .score { color: var(--madder); }
+.v-none .verdict { background: var(--surface); color: var(--muted); border: 1px dashed var(--line); }
+.v-none .score { color: var(--muted); }
 .reasons { margin: 0; padding-left: 18px; font-size: .9rem; color: var(--muted); }
 .offer .acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
 .offer .acts label { display: inline-flex; align-items: center; gap: 4px; font-size: .88rem; }
@@ -817,7 +819,7 @@ const DEFAULT_DATA = {
 const ROLE_WEIGHT = { core: 3, key: 1 };            // вес в прогрессе архетипа
 const ROLE_VALUE = { core: 1, key: 0.75, alt: 0.7 }; // ценность предмета для архетипа
 const ROLE_LABEL = { core: 'ядро', key: 'ключевой', alt: 'альтернатива' };
-const TAKE = 'Брать', MAYBE = 'Зависит', SKIP = 'Пропустить';
+const TAKE = 'Брать', MAYBE = 'Зависит', SKIP = 'Пропустить', NODATA = 'Нет данных';
 
 // ---------- хранение ----------
 function defaultRun(hero) {
@@ -996,7 +998,8 @@ function advise(run, name, price) {
     reasons.push(eco.get(n).note_ru || 'Экономика');
     if (run.day > 7) reasons.push('Экономика к концу забега ценится меньше');
   } else {
-    return { name, score: 20, verdict: SKIP, reasons: ['Нет в данных гайда — оцените сами'], unknown: true };
+    // 20 баллов — только для сортировки в конец списка; вердикт нейтральный, ведь данных просто нет
+    return { name, score: 20, verdict: NODATA, reasons: ['Нет в данных гайда — оцените сами'], unknown: true };
   }
 
   if (owned.has(n)) { best *= 0.6; reasons.push('Такой предмет уже есть'); }
@@ -1043,7 +1046,7 @@ function hints(run) {
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const initials = name => String(name).replace(/['’]s\b/gi, '').split(/[\s\-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
-const vClass = v => v === TAKE ? 'v-take' : v === MAYBE ? 'v-maybe' : 'v-skip';
+const vClass = v => v === TAKE ? 'v-take' : v === MAYBE ? 'v-maybe' : v === NODATA ? 'v-none' : 'v-skip';
 
 // Картинки вставляются после разметки (setHTML): уже загруженные <img> переиспользуются,
 // поэтому при перерисовке они не мигают инициалами.
@@ -1132,8 +1135,8 @@ function adviceCard(adv, extra = '') {
   return `<div class="offer ${vClass(adv.verdict)}">
     ${thumb(adv.name, 'lg')}
     <div>
-      <div class="row1"><span class="nm">${esc(adv.name)}</span>${sizeBadge(adv.name)}<span class="verdict">${adv.verdict}</span><span class="score" aria-label="оценка ${adv.score} из 100">${adv.score}</span></div>
-      <div class="bar" aria-hidden="true"><i style="width:${adv.score}%"></i></div>
+      <div class="row1"><span class="nm">${esc(adv.name)}</span>${sizeBadge(adv.name)}<span class="verdict">${adv.verdict}</span>${adv.unknown ? '<span class="score" aria-label="оценки нет">—</span>' : `<span class="score" aria-label="оценка ${adv.score} из 100">${adv.score}</span>`}</div>
+      <div class="bar" aria-hidden="true"><i style="width:${adv.unknown ? 0 : adv.score}%"></i></div>
       <ul class="reasons">${adv.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
       ${extra}
     </div></div>`;
@@ -1264,6 +1267,7 @@ function renderCompare() {
   if (a && b) {
     const diff = a.score - b.score;
     if (norm(a.name) === norm(b.name)) v = 'Это один и тот же предмет.';
+    else if (a.unknown || b.unknown) v = `Про «${(a.unknown ? a : b).name}» в гайде нет данных — сравнить нельзя, оцените сами.`;
     else if (Math.abs(diff) < 5) v = `Примерно равны (${a.score} и ${b.score}) — решайте по ситуации на доске.`;
     else v = `Лучше «${diff > 0 ? a.name : b.name}»: на ${Math.abs(diff)} баллов выше.`;
   }

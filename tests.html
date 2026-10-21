@@ -117,7 +117,7 @@ document.getElementById('app').addEventListener('load', () => {
     check('У предмета сборки без размера есть причина «Размер неизвестен»',
       advise({}, 'Sizeless Thing', null, noSize).reasons.includes('Размер неизвестен'));
     a = advise({}, 'Совсем Неизвестный Предмет');
-    eq('Неизвестный предмет: 20 «Пропустить»', [a.score, a.verdict], [20, 'Пропустить']);
+    eq('Неизвестный предмет: 20 (для сортировки) и «Нет данных»', [a.score, a.verdict, a.unknown], [20, 'Нет данных', true]);
     check('Неизвестный: «оцените сами»', a.reasons.some(r => r.includes('оцените сами')));
     eq('Регистр и пробелы в названии не важны', advise({ day: 1 }, '  pyg\'s   GYM ').score, 50);
 
