@@ -849,10 +849,37 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 const initials = name => String(name).replace(/['’]s\b/gi, '').split(/[\s\-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
 const vClass = v => v === TAKE ? 'v-take' : v === MAYBE ? 'v-maybe' : 'v-skip';
 
+// Картинки вставляются после разметки (setHTML): уже загруженные <img> переиспользуются,
+// поэтому при перерисовке они не мигают инициалами.
 function thumb(name, cls = '') {
   const it = info(name);
-  const img = it.img ? `<img src="${IMG_BASE}${esc(it.img)}.avif" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">` : '';
-  return `<span class="thumb ${cls}" aria-hidden="true"><span class="ini">${esc(initials(name))}</span>${img}</span>`;
+  const src = it.img ? IMG_BASE + it.img + '.avif' : '';
+  return `<span class="thumb ${cls}" aria-hidden="true"${src && !imgFailed.has(src) ? ` data-src="${esc(src)}"` : ''}><span class="ini">${esc(initials(name))}</span></span>`;
+}
+const imgPool = new Map();   // src -> свободные <img>
+const imgFailed = new Set(); // src, которые не загрузились — больше не пробуем
+function setHTML(el, html) {
+  for (const img of el.querySelectorAll('img[data-src]')) {
+    const k = img.dataset.src;
+    if (!imgPool.has(k)) imgPool.set(k, []);
+    imgPool.get(k).push(img);
+  }
+  el.innerHTML = html;
+  for (const t of el.querySelectorAll('.thumb[data-src]')) {
+    const k = t.dataset.src;
+    let img = imgPool.get(k)?.pop();
+    if (!img) {
+      img = document.createElement('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.referrerPolicy = 'no-referrer';
+      img.dataset.src = k;
+      img.addEventListener('error', () => { imgFailed.add(k); img.remove(); }, { once: true });
+      img.src = k;
+    }
+    t.appendChild(img);
+  }
 }
 function sizeBadge(name) {
   const sz = info(name).size;
@@ -900,7 +927,7 @@ function renderBoard() {
       </span></div>`;
   });
   for (let k = used; k < total; k++) cells.push('<div class="slot empty" aria-hidden="true"></div>');
-  $('board').innerHTML = cells.join('');
+  setHTML($('board'), cells.join(''));
   $('board-usage').textContent = `занято ${used} из ${total} слотов`;
   $('board-meta').innerHTML = S.run.board.length ? '' : '<span>Пусто. Выберите «Доска» в каталоге и нажмите на предмет.</span>';
 }
@@ -923,23 +950,23 @@ function renderOffers() {
   }
   const list = S.run.offers.map((o, i) => ({ o, i, adv: advise(S.run, o.name, o.price) }))
     .sort((x, y) => y.adv.score - x.adv.score);
-  $('offers').innerHTML = list.map(({ o, i, adv }) => adviceCard(adv, `<div class="acts">
+  setHTML($('offers'), list.map(({ o, i, adv }) => adviceCard(adv, `<div class="acts">
       <label>цена <input type="number" min="0" value="${o.price ?? ''}" data-act="offer-price" data-i="${i}" aria-label="Цена ${esc(o.name)}"></label>
       <button type="button" class="btn tiny primary" data-act="offer-buy" data-i="${i}">Купил</button>
       <button type="button" class="btn tiny danger" data-act="offer-remove" data-i="${i}" aria-label="${esc(o.name)}: убрать">убрать</button>
-    </div>`)).join('');
+    </div>`)).join(''));
 }
 
 function renderStash() {
-  $('stash').innerHTML = S.run.stash.length ? S.run.stash.map((n, i) => `<span class="chip">${thumb(n, 'sm')}<span>${esc(n)}</span>
+  setHTML($('stash'), S.run.stash.length ? S.run.stash.map((n, i) => `<span class="chip">${thumb(n, 'sm')}<span>${esc(n)}</span>
       <button type="button" class="btn tiny" data-act="stash-to-board" data-i="${i}" aria-label="${esc(n)}: на доску">на доску</button>
       <button type="button" class="btn tiny danger" data-act="stash-remove" data-i="${i}" aria-label="${esc(n)}: убрать">убрать</button></span>`).join('')
-    : '<p class="empty-note">Стеш пуст.</p>';
+    : '<p class="empty-note">Стеш пуст.</p>');
 }
 
 function renderBuilds() {
   const owned = ownedSet(S.run);
-  $('builds').innerHTML = matches(S.run).map(m => {
+  setHTML($('builds'), matches(S.run).map(m => {
     const pct = Math.round(m.progress * 100);
     const isT = m.id === S.run.target;
     const all = [...m.a.items, ...(m.a.alternatives || [])];
@@ -956,7 +983,7 @@ function renderBuilds() {
       ${isT ? '<button type="button" class="btn tiny" data-act="target" data-v="">Снять цель</button>'
             : `<button type="button" class="btn tiny" data-act="target" data-v="${esc(m.id)}">Сделать целью</button>`}
     </div>`;
-  }).join('');
+  }).join(''));
 }
 
 function renderFilters() {
@@ -982,13 +1009,13 @@ function renderCatalog() {
   const list = filteredCatalog();
   const archName = Object.fromEntries(archetypes().map(a => [a.id, a.name]));
   $('cat-count').textContent = `${list.length} шт.`;
-  $('catalog').innerHTML = list.length ? list.map(it => {
+  setHTML($('catalog'), list.length ? list.map(it => {
     const has = owned.has(norm(it.name));
     const meta = it.eco ? 'экономика' : it.custom ? 'свой' : it.archs.map(a => archName[a]).join(', ');
     return `<button type="button" class="card" data-act="add" data-name="${esc(it.name)}" title="${esc(it.name)}${has ? ' — уже есть' : ''}">
       ${has ? '<span class="own" aria-label="уже есть">✓</span>' : ''}${thumb(it.name)}
       <span class="nm">${esc(it.name)}</span><span class="meta">${it.size || '?'} · ${esc(meta)}</span></button>`;
-  }).join('') : '<p class="empty-note">Ничего не найдено. Можно добавить свой предмет ниже.</p>';
+  }).join('') : '<p class="empty-note">Ничего не найдено. Можно добавить свой предмет ниже.</p>');
 }
 
 function renderCompare() {
@@ -998,7 +1025,7 @@ function renderCompare() {
     const pr = $('cmp-' + k + '-price').value;
     if (!name) { $('cmp-' + k + '-out').innerHTML = '<p class="empty-note">Выберите предмет.</p>'; return null; }
     const adv = advise(S.run, name, pr === '' ? null : clampInt(pr, 0, 9999, 0));
-    $('cmp-' + k + '-out').innerHTML = adviceCard(adv);
+    setHTML($('cmp-' + k + '-out'), adviceCard(adv));
     return adv;
   };
   const a = side('a'), b = side('b');
