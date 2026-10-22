@@ -152,9 +152,13 @@ document.getElementById('app').addEventListener('load', () => {
     // Сборки вне меты
     near('Square без ядра: Dog = 1/7', progress({ board: ['Dog'] }, 'square'), 1 / 7);
     a = advise({ day: 1 }, 'Belt');
-    eq('Belt в 4 не начатых сборках, день 1: без бонуса → 45', a.score, 45);
+    check('Belt в 4 не начатых сборках вне меты, день 1: 0.45 × 0.9, без бонуса → 40–41', [40, 41].includes(a.score), `получено ${a.score}`);
     a = advise({ day: 5, stash: ['Double Whammy', 'Riceballer', 'Money Furnace', 'Dog'] }, 'Belt');
-    check('Belt в 4 начатых сборках: бонус не больше +0.10 → 65', a.score === 65 || a.score === 64, `получено ${a.score}`);
+    check('Belt в 4 начатых сборках: 0.55 × 0.9 + бонус не больше 0.10 → 59–60', [59, 60].includes(a.score), `получено ${a.score}`);
+    a = advise({ day: 2 }, 'Double Whammy');
+    eq('Поздняя сборка в дни 1–4: 0.5 × 0.9 × 0.8 → 36', a.score, 36);
+    a = advise({ day: 5 }, 'Double Whammy');
+    eq('Поздняя сборка с 5-го дня: только × 0.9 → 45', a.score, 45);
     check('В начале забега подсказка про ядро — только мета-сборки', (() => {
       const t = hintText({ day: 5 });
       return t.includes("Pyg's Gym") && !t.includes('Double Whammy');

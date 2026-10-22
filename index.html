@@ -690,6 +690,7 @@ const DEFAULT_DATA = {
         {
           id: 'double_whammy',
           tier: 'offmeta',
+          late: true,
           name: 'Double Whammy',
           author: 'Kripparrian',
           updated: '2026-06-27',
@@ -1184,6 +1185,8 @@ function advise(run, name, price) {
       let v = (ROLE_VALUE[it.role] ?? 0.5) * (0.5 + 0.7 * prog);
       if (run.day <= 4 && prog === 0) v = Math.max(v, 0.45); // в начале забега всё ещё открыто
       let r = `${a.name}: ${ROLE_LABEL[it.role] || it.role}, сборка собрана на ${Math.round(prog * 100)}%`;
+      if (a.tier === 'offmeta') { v *= 0.9; r += ' (вне меты)'; }
+      if (a.late && run.day <= 4) { v *= 0.8; r += '; поздняя сборка — в начале забега рано'; }
       if (run.target && a.id !== run.target) { v *= 0.6; r += ' (не ваша цель)'; }
       if (run.day >= 9 && prog < 0.25) { v *= 0.75; r += '; поздно начинать с нуля'; }
       if (it.note_ru) r += `; ${it.note_ru}`;
