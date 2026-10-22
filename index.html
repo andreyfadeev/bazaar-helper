@@ -630,7 +630,7 @@ const STALE_DAYS = 45;
 const NO_STORE = new URLSearchParams(location.search).has('nostore');
 
 const DEFAULT_DATA = {
-  version: 'S19-2026-10-21',
+  version: 'S19-2026-10-22',
   season: 19,
   updated: '2026-10-12',
   source: 'https://mobalytics.gg/the-bazaar/guides/meta-builds',
@@ -846,6 +846,167 @@ const DEFAULT_DATA = {
         { name: 'Rewards Card', size: 'S', img: '45defd20-6c4e-40a7-b2eb-4c4d2284eabd', note_ru: 'Экономика (из старых гайдов, проверьте актуальность)' },
         { name: 'ATM', size: 'M', img: 'c926fac8-f9ba-4430-a01a-a71a32c501c7', note_ru: 'Экономика (из старых гайдов, проверьте актуальность)' },
         { name: 'Cash Register', size: 'M', img: '4c8c35c4-ab16-465c-92be-0113dd99d3df', note_ru: 'Даёт Spare Change каждый день (из старых гайдов, проверьте актуальность)' }
+      ],
+      // Все предметы героя из базы Mobalytics: [название, размер, картинка, стартовый тир].
+      // Для оценки нужны сборки; эти предметы нужны каталогу (поиск, картинка, размер).
+      catalog_source: 'https://mobalytics.gg/the-bazaar/database/items-and-enchantments',
+      catalog_items: [
+        ["28 Hour Fitness", "L", "0efe7d3f-4f18-4667-89a3-ac915a93a9f5", "Gold"],
+        ["Abacus", "S", "a05d23cb-af36-42fa-aab1-568aba7f30c6", "Silver"],
+        ["Apropos Chapeau", "M", "2abed747-432d-4307-98ce-0a0ec244d904", "Silver"],
+        ["Atlas Stone", "M", "c39eed44-0e6a-4720-9d70-817b737449ec", "Silver"],
+        ["Atlatl", "M", "b2681448-9dec-47c7-bb4f-58c51830735d", "Diamond"],
+        ["ATM", "M", "c926fac8-f9ba-4430-a01a-a71a32c501c7", "Bronze"],
+        ["Aurora Dome", "M", "bb101259-4d30-4d93-9d69-b99c08f17488", "Silver"],
+        ["Badblocker", "S", "f049db80-1976-4767-8016-4680c8c56a9f", "Silver"],
+        ["Balcony", "M", "d7a66bfb-963f-4c13-8c2b-0bef35a650c8", "Gold"],
+        ["Bandages", "S", "09132149-783d-4d5a-900c-31135bffab44", "Bronze"],
+        ["Beast of Burden", "L", "d7cef361-2948-4b18-ad44-9c8b145d22ac", "Gold"],
+        ["Beehive", "M", "6676145e-d1e2-469a-b111-d5c4edfc0a30", "Gold"],
+        ["Belt", "M", "4f8bc475-212c-49cf-b3e5-d1f971897a24", "Gold"],
+        ["Billboard", "L", "18e2e46f-6419-44b3-80fa-11b13bc7b831", "Gold"],
+        ["Blue Piggles A", "S", "BluePigglesA", "Bronze"],
+        ["Blue Piggles L", "S", "2df8f38b-bb9f-4247-afe9-525067c9e29e", "Bronze"],
+        ["Blue Piggles R", "S", "1d8d4dea-aaf9-4041-aa54-ae133f552d55", "Bronze"],
+        ["Booby Trap", "M", "fe1a40e3-cedc-4a7f-83f0-998286f71725", "Silver"],
+        ["Boomerang", "M", "af43730d-efaa-4a1d-adeb-bf31d536acf0", "Bronze"],
+        ["Bootstraps", "M", "9c97827a-f6c3-4abd-b7c1-bc1b37cc82f0", "Gold"],
+        ["Brass Knuckles", "S", "3b924a0a-f423-4286-8d08-9ade57b2ebae", "Bronze"],
+        ["Briefcase", "M", "0c99ece6-4aa5-40ac-a663-dc81df03a694", "Bronze"],
+        ["Bushel", "M", "843ddc82-9d87-4995-b81c-bf31ae45fd30", "Bronze"],
+        ["Business Card", "S", "b553bdf2-bde8-408b-9e78-336eab394546", "Bronze"],
+        ["Busy Bee", "S", "94e28682-a012-4dd0-8ce8-7fe180aa6127", "Silver"],
+        ["Caltrops", "M", "a0c3a02b-4d29-4159-805e-3501463d1ca1", "Diamond"],
+        ["Cargo Shorts", "M", "783cda9d-1550-42d5-9651-51883da5ad66", "Silver"],
+        ["Cash Cannon", "M", "8f61677c-aa75-4275-b8b4-3cbaca1fdcbf", "Silver"],
+        ["Cash Register", "M", "4c8c35c4-ab16-465c-92be-0113dd99d3df", "Bronze"],
+        ["Closed Sign", "M", "a21b1e80-c633-487b-9292-7552519198c8", "Silver"],
+        ["Coincure", "M", "dc43ae7a-a60a-42e7-a019-eb3c89b59a01", "Silver"],
+        ["Cold Room", "M", "6546e26d-d3a2-4b57-96ca-357f4be5c375", "Silver"],
+        ["Crook", "M", "d903dda8-9c30-4325-a727-c885ad972025", "Bronze"],
+        ["Crystal Bonsai", "S", "7da204dd-87ed-45cb-b62b-61904b41baa4", "Silver"],
+        ["Display Case", "M", "fc3ed622-30d7-4df3-8530-a34e8d47a363", "Silver"],
+        ["Dog", "M", "6965d291-610d-46b7-a10d-83578b0e1981", "Bronze"],
+        ["Double Whammy", "L", "e37638c3-4e5c-472c-96f9-b503a86e0fe3", "Gold"],
+        ["Dragon Tooth", "S", "3b32361e-2ddc-47b6-bcce-0ac560cb407b", "Silver"],
+        ["Fixer Upper", "L", "43190b98-4f7f-4b2e-b92e-32b07b7fc2e1", "Bronze"],
+        ["Flail", "M", "cbe0436a-3573-4bbb-968b-9bb61343c2a7", "Bronze"],
+        ["Flying Pig", "M", "0db6f6e9-d0ba-471d-905a-3ce86912feef", "Silver"],
+        ["Fort", "L", "fb9bc349-bc38-40f4-a67e-a9c580e1e681", "Gold"],
+        ["Fountain", "M", "e6902678-04d2-494d-90fc-2638c91866d3", "Silver"],
+        ["Games Table", "M", "d3e0728d-dfc9-49e3-bdfd-abb16cb9e176.webp", "Gold"],
+        ["Ganjo", "M", "c9c9a413-59b3-4fc8-b4ab-dcfac0a44e90", "Bronze"],
+        ["Gavel", "S", "8ae203cd-a429-4ade-b5e3-a612a906d71a", "Silver"],
+        ["Globe", "M", "07df297d-e116-42a4-9596-4af674764d1b", "Silver"],
+        ["Golf Clubs", "M", "26621cbf-809d-4522-ad24-34443af96f27", "Bronze"],
+        ["Gramophone", "M", "b6afda86-9dec-4580-b1e3-4d1cc59c3029", "Gold"],
+        ["Green Piggles A", "S", "846c1398-9cc2-4aac-bc84-adadd1382f42", "Bronze"],
+        ["Green Piggles L", "S", "a4b95afc-4925-4bca-878d-cabd338388a2", "Bronze"],
+        ["Green Piggles R", "S", "c204f622-4000-40a4-9bf4-6aa53f768b1d", "Bronze"],
+        ["Grindstone", "M", "893f5fec-30ed-4a1e-b896-5b086d952da4", "Silver"],
+        ["Gumball Machine", "M", "c53eff8b-0407-4e8c-adaf-70b2a66b3528", "Silver"],
+        ["Haladie", "S", "a490a838-37ed-4812-88fa-9e9a88d2eb8d", "Bronze"],
+        ["Hammock", "M", "a4b48bb6-180a-49fd-bb1c-c6beb372b6de", "Bronze"],
+        ["Hatchet", "S", "349fc81f-2b3a-4d39-beaa-6a0d5105a19a", "Bronze"],
+        ["Heirlooms", "S", "b4462dd4-2a2d-412b-b532-c47bba6f93c1", "Bronze"],
+        ["Hogwash", "L", "c2a74791-1d79-45bd-841d-2e3f2a61da8f", "Silver"],
+        ["Hot Stones", "S", "cdea14ac-23d0-43c2-95b3-12cedab1795a", "Bronze"],
+        ["Hypergreens", "M", "32aa1a2f-f344-42b2-808d-839fb8596d53", "Silver"],
+        ["Ice Cream Truck", "L", "012658f4-b289-4f10-917c-a9a1f3f9ca03", "Silver"],
+        ["Ice Luge", "S", "9d31868e-1c69-4186-a3df-8ca10dc2a80f", "Gold"],
+        ["Igloo", "L", "acaebb2b-fe63-4de0-9d9e-949673c08a47", "Silver"],
+        ["Jabalian Dagger", "M", "9ca6a93b-10e9-4138-abd1-0ff2e7c2c985", "Silver"],
+        ["Jabalian Drum", "L", "9ab4ba04-0c08-4374-b86e-e94dcaaca334", "Silver"],
+        ["Jabalian Recurve Bow", "M", "a4cb5a88-1abb-4fb0-b4dc-a1b7eedebd64", "Silver"],
+        ["Jabalian Totem", "M", "ee729aab-0107-4f42-91b2-636e252a17fd.webp", "Bronze"],
+        ["Keychain", "S", "6aa8be90-55f4-4fec-bd92-811e175657a1", "Gold"],
+        ["Kukri", "S", "03b1fd16-6b0d-4847-a76f-6c586f7c5958", "Bronze"],
+        ["Landscraper", "L", "530b642b-4a31-4cc4-a7ae-ea22d607ad4d", "Silver"],
+        ["Laser Security System", "S", "111a690e-0afc-41f1-adb5-c8c055b64627", "Gold"],
+        ["Ledger", "M", "5a4c4c98-d41e-43f8-aa39-a74847e2ff3c", "Silver"],
+        ["Lemonade Stand", "L", "832afbee-fdb4-47e2-b4ac-0206b8955816", "Bronze"],
+        ["Lion Cane", "M", "9a7d5711-930a-4815-86cc-4e357680730c", "Gold"],
+        ["Loupe", "S", "234ae6aa-b94b-456d-a2fb-f0cbcaa9c655", "Gold"],
+        ["Lumboars", "M", "9d289951-bda7-4f74-a5cf-dbe350c0cae5", "Bronze"],
+        ["Luxury Kiuas", "M", "25035a36-1105-4ef9-81b0-c5bb6926415b", "Silver"],
+        ["Luxury Tents", "L", "3b1e3858-93d4-45c8-892b-b66aec1b14a9", "Gold"],
+        ["Marbles", "S", "a87c42a5-b21e-4179-9827-ceea46c25033", "Bronze"],
+        ["Masterpiece", "M", "1e46dbf7-2fe0-4ec1-a657-c3c623eeca6e", "Silver"],
+        ["Matchbox", "S", "64c62815-9c8a-40fa-a963-3fc09a46bbae", "Bronze"],
+        ["Model Ship", "M", "c14e76be-2dd6-4d0b-8652-04c6b46412d5", "Silver"],
+        ["Money Furnace", "M", "7153afb9-c4c6-4449-8d70-d1b88fc86c1a", "Bronze"],
+        ["Money Tree", "L", "49895243-8b5d-407f-9c8c-efdd05b3a34a", "Bronze"],
+        ["Monocle", "S", "ec5e8e2a-c35e-4098-bdae-63ea9f3d6fd3", "Silver"],
+        ["Oinkment", "S", "64e3569f-e023-49a5-ab75-f9613c338d53", "Silver"],
+        ["Open Sign", "M", "6d529d36-e679-4124-8a96-d0b74dc767ee", "Gold"],
+        ["Orange Piggles A", "S", "e833f9cf-39ac-44ca-a287-7bd6ddebc77e", "Bronze"],
+        ["Orange Piggles L", "S", "3f48a184-3c29-4049-88c4-d28edd391bda", "Bronze"],
+        ["Orange Piggles R", "S", "80fb0457-0337-4df1-bcb1-9ad5b8a7840c", "Bronze"],
+        ["Pawn Shop", "L", "31b35938-9402-4990-b4d9-473ce5887af9", "Bronze"],
+        ["PenFT", "S", "7e100494-97d5-4642-a867-f4cc2be6b964", "Silver"],
+        ["Pepper Spray", "S", "dcd24486-3e93-4428-a414-caeba6720237", "Bronze"],
+        ["Piggles", "S", "7fa2b9c8-f038-44f9-8143-a4f8ee7f34bf", "Bronze"],
+        ["Piggles Board", "M", "23da3858-b9ac-480d-9c80-da662c92d67a", "Gold"],
+        ["Piggles Launcher", "M", "d2d9344d-ee1e-4e54-9d84-af19f1d5e022", "Bronze"],
+        ["Piggles Protectors", "S", "4997b886-940a-4882-92f2-e5c8042749df", "Bronze"],
+        ["PiggleStorm Gaming House", "L", "f104a9ab-c8bd-44b9-b08a-5587b77a2215", "Gold"],
+        ["Piggy Bank", "S", "855cf2a5-930b-43db-b388-9f814f80a4fb", "Bronze"],
+        ["Pinata", "M", "08d9f6b5-c5ab-4e5b-8c1e-9a5edebb8618", "Bronze"],
+        ["Pitchfork", "M", "ce0ee6fc-ff37-488c-95e1-f975339dec75", "Bronze"],
+        ["Pontoon Skimmer", "L", "6b5b3ef1-d312-4cfc-8e44-a032a231e15a", "Silver"],
+        ["Premium Green Piggles", "S", "5c8f6b67-ebe2-4f8e-9e2e-cef4e623c01c", "Bronze"],
+        ["Premium Orange Piggles", "S", "ce776fca-3f9f-44f9-b3f0-5aa623d6711b", "Bronze"],
+        ["Premium Piggles", "S", "0c33ab49-364e-4830-8e3f-773f315b3928", "Bronze"],
+        ["Premium Red Piggles", "S", "ae126c7d-8f0f-4a23-b11f-da56e5353220", "Bronze"],
+        ["Premium Yellow Piggles", "S", "df67fa82-d189-4dc3-997c-69e7963189af", "Bronze"],
+        ["Private Hot Springs", "L", "2e0be4f0-0472-444a-a541-09f1ba464c64", "Silver"],
+        ["Private Jet", "L", "e49c8ca8-36e9-4018-9d57-8d2c1e45920a", "Silver"],
+        ["Pyg's Gym", "L", "3d185981-0b60-47ce-9ed3-58be5d7b2737", "Silver"],
+        ["Red Piggles A", "S", "844efa15-de6f-4fec-a438-21904969577b", "Bronze"],
+        ["Red Piggles L", "S", "RedPigglesL", "Bronze"],
+        ["Red Piggles R", "S", "RedPigglesR", "Bronze"],
+        ["Regal Blade", "M", "6ada601b-88a5-4eaf-8813-805bd51c7f9b", "Bronze"],
+        ["Rewards Card", "S", "45defd20-6c4e-40a7-b2eb-4c4d2284eabd", "Bronze"],
+        ["Riceballer", "M", "6508a7c7-c5f1-445a-a822-da9c2ed10455", "Silver"],
+        ["Ring King Gauntlets", "S", "3b862903-7857-4297-a711-7ae32a4c5038", "Bronze"],
+        ["Robe", "M", "c9930f2d-507e-4187-8889-b55bbd88ea18", "Bronze"],
+        ["Safe", "M", "15a2cf7d-4e08-4358-8bd1-730919719023", "Bronze"],
+        ["Sauna", "M", "21c858b6-6f6e-4bc5-9e84-3722b3dd813a", "Silver"],
+        ["Shipment", "L", "103cd65b-0b3d-418d-92d8-0dfa5f19d7c4", "Silver"],
+        ["Showcase", "M", "ff16ffda-dee0-40db-a14c-302d35ee3b2d", "Bronze"],
+        ["Signet Ring", "S", "c9beb35d-e6c6-4e3a-ad2c-1d64db11be07", "Bronze"],
+        ["Silk Scarf", "M", "aff2d8f4-528a-4229-8175-8901fcadcb70", "Bronze"],
+        ["Skyscraper", "L", "fc01f3c3-5562-4616-aa12-005834d6647f", "Gold"],
+        ["Slingshot", "S", "0fc3f9d6-01ce-4793-8ece-b0e05ef6441e", "Bronze"],
+        ["Snow Globe", "M", "4680e750-4ea4-421a-b486-194c805ad6a8", "Silver"],
+        ["Snowmobile", "M", "6c0af8cf-273f-43c5-afb5-ef00c87ffcc8", "Silver"],
+        ["Spacescraper", "L", "40d8b44a-8e2f-4081-8163-043d76ddbafa", "Gold"],
+        ["Speedrunner", "S", "2215483f-1fc3-495a-b492-d917dd7d588c", "Silver"],
+        ["Spices", "S", "c05828f1-39e6-47aa-9041-216dfa60d83d", "Gold"],
+        ["Spiky Shield", "M", "8ec1c3f9-6220-431b-b3b0-52b3be2e20f5", "Bronze"],
+        ["Sponsored Apparel", "M", "57118705-887e-44fb-b4bc-586aa4f20baf", "Silver"],
+        ["Stained Glass Window", "M", "6c77228f-9a62-4274-a4a5-cee77f88f6ec", "Gold"],
+        ["Steam Ladle", "S", "194572c8-39b0-4dea-92d5-2c97f8d59554", "Bronze"],
+        ["Stopwatch", "S", "428de0f0-bf0d-4da6-9abe-dde8f2174aa9", "Gold"],
+        ["Streaming Setup", "M", "2a0624d0-8257-42f9-8e9d-bbe0a5218b44", "Silver"],
+        ["Subscraper", "L", "14cd589f-5648-4fc7-82d1-c62da0047982", "Gold"],
+        ["Succulents", "S", "96e51b95-eaab-40ea-9a89-381727ce2434", "Bronze"],
+        ["Tea Set", "M", "0c501dff-aa3a-4091-9c1e-2df43faef2e1", "Silver"],
+        ["Textiles", "M", "b20bdd25-921e-490d-a28e-599ac70d15f7", "Gold"],
+        ["Tournament Arena", "L", "d5ad07b5-9b1e-4000-848e-503861851e2b", "Diamond"],
+        ["Tusked Helm", "S", "aa97a75d-3bdf-4f1b-bc2b-457375e31e0f", "Bronze"],
+        ["Uwashiwali Bird", "S", "54c74b82-0a7d-4dab-a335-f3b0b8b2157c", "Bronze"],
+        ["Vending Machine", "M", "7827d946-0204-4897-b3e4-bd7cec8e3979", "Silver"],
+        ["Vineyard", "L", "2fdde51e-5bf5-4136-b86f-3f83053cbf25", "Silver"],
+        ["VIP Pass", "S", "02f42044-50df-4c3a-abbd-942903953b79", "Silver"],
+        ["Weights", "M", "34fcf624-ccba-42a8-b4fc-837e0002a163", "Bronze"],
+        ["Windmill", "L", "ff06b63a-15ee-49be-80b1-5fb52b4e1616", "Gold"],
+        ["Wrist Warrior", "S", "ac05b4d0-9b91-44c9-a4ff-d5606df09775", "Bronze"],
+        ["Yellow Piggles A", "S", "9c21ee00-116d-4868-a215-3f9b57bc8657", "Bronze"],
+        ["Yellow Piggles L", "S", "YellowPigglesL", "Bronze"],
+        ["Yellow Piggles R", "S", "3868bcee-4463-4c34-9a9b-b1ab1fa49260", "Bronze"],
+        ["Yetarian Club", "L", "60fc7e96-c754-40be-803b-e9237aeb920d", "Gold"],
+        ["Yo-Yo", "S", "84b74f1e-0960-4c71-bb4f-d35e114250c2", "Silver"]
       ]
     }
   }
@@ -943,6 +1104,11 @@ function catalog() {
   }
   for (const [k, e] of ecoIndex()) {
     if (!map.has(k)) map.set(k, { name: e.name, size: e.size || null, img: e.img || null, archs: [], core: false, eco: true, custom: false });
+  }
+  for (const [name, size, img, rarity] of heroData().catalog_items || []) {
+    const k = norm(name), cur = map.get(k);
+    if (cur) Object.assign(cur, { size: cur.size || size, img: cur.img || img, rarity });
+    else map.set(k, { name, size, img, rarity, archs: [], core: false, eco: false, custom: false, other: true });
   }
   for (const c of S.customItems) {
     const k = norm(c.name);
@@ -1087,7 +1253,7 @@ const vClass = v => v === TAKE ? 'v-take' : v === MAYBE ? 'v-maybe' : v === NODA
 // поэтому при перерисовке они не мигают инициалами.
 function thumb(name, cls = '') {
   const it = info(name);
-  const src = it.img ? IMG_BASE + it.img + '.avif' : '';
+  const src = it.img ? IMG_BASE + it.img + (/\.\w+$/.test(it.img) ? '' : '.avif') : '';
   return `<span class="thumb ${cls}" aria-hidden="true"${src && !imgFailed.has(src) ? ` data-src="${esc(src)}"` : ''}><span class="ini">${esc(initials(name))}</span></span>`;
 }
 const imgPool = new Map();   // src -> свободные <img>
@@ -1268,7 +1434,8 @@ function archOptions(selected, emptyLabel) {
 }
 
 function renderFilters() {
-  const opts = [['all', 'Все'], ['meta', 'Мета'], ['offmeta', 'Вне меты'], ['eco', 'Экономика']];
+  const opts = [['all', 'Все'], ['meta', 'Мета'], ['offmeta', 'Вне меты'], ['eco', 'Экономика'], ['other', 'Прочие']];
+  if (!(heroData().catalog_items || []).length) opts.pop();
   if (!archetypes().some(isOffmeta)) opts.splice(1, 2);
   if (S.customItems.length) opts.push(['custom', 'Свои']);
   const isArch = archetypes().some(a => a.id === S.ui.filter);
@@ -1285,7 +1452,7 @@ function filteredCatalog() {
   const q = norm($('search').value || '');
   const f = S.ui.filter;
   return [...catalog().values()].filter(it =>
-    (f === 'all' || (f === 'eco' && it.eco) || (f === 'custom' && it.custom) ||
+    (f === 'all' || (f === 'eco' && it.eco) || (f === 'custom' && it.custom) || (f === 'other' && it.other) ||
       (f === 'meta' && it.meta) || (f === 'offmeta' && it.archs.length && !it.meta) || it.archs.includes(f)) &&
     (!q || norm(it.name).includes(q))
   ).sort((a, b) => (b.meta - a.meta) || (b.core - a.core) || a.name.localeCompare(b.name));
@@ -1299,7 +1466,7 @@ function renderCatalog() {
   setHTML($('catalog'), list.length ? list.map(it => {
     const has = owned.has(norm(it.name));
     const names = it.archs.map(a => archName[a]);
-    const meta = it.eco ? 'экономика' : it.custom ? 'свой' : names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2}` : names.join(', ');
+    const meta = it.eco ? 'экономика' : it.custom ? 'свой' : it.other ? (it.rarity || 'вне сборок') : names.length > 2 ? `${names.slice(0, 2).join(', ')} +${names.length - 2}` : names.join(', ');
     return `<button type="button" class="card" data-act="add" data-name="${esc(it.name)}" title="${esc(it.name)}${has ? ' — уже есть' : ''}">
       ${has ? '<span class="own" aria-label="уже есть">✓</span>' : ''}${thumb(it.name)}
       <span class="nm">${esc(it.name)}</span><span class="meta">${it.size || '?'} · ${esc(meta)}</span></button>`;
@@ -1366,6 +1533,7 @@ function renderData() {
     <dt>Сезон</dt><dd>${esc(d.season ?? '—')}</dd>
     <dt>Обновлено</dt><dd>${esc(d.updated ? fmtDate(d.updated) : '—')}${age != null ? ` · ${age} дн. назад` : ''}</dd>
     <dt>Героев</dt><dd>${heroesCount}</dd>
+    <dt>Предметов в каталоге</dt><dd>${catalog().size}${d.heroes[S.run.hero].catalog_source ? ` · <a href="${esc(d.heroes[S.run.hero].catalog_source)}" target="_blank" rel="noopener noreferrer">база Mobalytics</a>` : ''}</dd>
     <dt>Источник</dt><dd>${d.source ? `<a href="${esc(d.source)}" target="_blank" rel="noopener noreferrer">${esc(d.source)}</a>` : '—'}</dd>`;
   $('data-alert').innerHTML = age != null && age > STALE_DAYS
     ? `<p class="alert">Данным больше ${STALE_DAYS} дней — мета могла измениться. Сверьтесь с гайдом и импортируйте свежие данные.</p>` : '';

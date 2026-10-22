@@ -192,6 +192,23 @@ document.getElementById('app').addEventListener('load', () => {
       [...all, ...hero.economy_items].filter(i => !['S', 'M', 'L'].includes(i.size)).map(i => i.name).join(', '));
     check('У экономики есть картинки', hero.economy_items.every(i => i.img));
     check('У каждого предмета сборки есть картинка', all.every(i => i.img), all.filter(i => !i.img).map(i => i.name).join(', '));
+    // Общий каталог героя
+    const pool = hero.catalog_items || [];
+    check('В каталоге героя 150+ предметов', pool.length >= 150, `сейчас ${pool.length}`);
+    check('У каждого предмета каталога размер S/M/L, картинка и тир',
+      pool.every(([n, sz, img, r]) => n && ['S', 'M', 'L'].includes(sz) && img && ['Bronze', 'Silver', 'Gold', 'Diamond', 'Legendary'].includes(r)));
+    check('Названия в каталоге не повторяются', new Set(pool.map(p => p[0])).size === pool.length);
+    // Shadowed Cloak и Truffles — общие (Common) предметы, в базе героя их нет
+    const COMMON = ['Shadowed Cloak', 'Truffles'];
+    check('Все предметы сборок, кроме общих, есть в каталоге героя', all.every(i => COMMON.includes(i.name) || pool.some(p => p[0] === i.name)),
+      all.filter(i => !COMMON.includes(i.name) && !pool.some(p => p[0] === i.name)).map(i => i.name).join(', '));
+    setRun({});
+    const cat = ev('catalog()');
+    eq('Jabalian Totem в каталоге: размер M, тир Bronze', (({ size, rarity, other }) => ({ size, rarity, other }))(cat.get('jabalian totem')), { size: 'M', rarity: 'Bronze', other: true });
+    check('Crook в каталоге', cat.has('crook'));
+    a = advise({ day: 3 }, 'Jabalian Totem');
+    eq('Предмет вне сборок: «Нет данных» без причины про размер', [a.verdict, a.reasons.includes('Размер неизвестен')], ['Нет данных', false]);
+    eq('Предмет вне сборок занимает свои слоты на доске', ev('boardUsage')(setRun({ board: ['Jabalian Totem'] })).used, 2);
     check('replaces ссылается на предмет той же сборки', hero.archetypes.every(x => (x.alternatives || [])
       .every(alt => !alt.replaces || x.items.some(i => i.name === alt.replaces))));
   } catch (err) {

@@ -27,6 +27,9 @@
 - Сборки вне меты (Double Whammy, Freeze, Riceballer, Money Furnace, Landscraper, Square, Luxury Kiuas,
   Yetarian Club) — из гайдов Kripparrian на [Mobalytics](https://mobalytics.gg/the-bazaar/builds), декабрь 2025 — июнь 2026.
   В интерфейсе они помечены «вне меты», у каждой указаны дата и ссылка на гайд.
+- Каталог: все 156 предметов Pygmalien из [базы Mobalytics](https://mobalytics.gg/the-bazaar/database/items-and-enchantments)
+  с размером, стартовым тиром и картинкой (фильтр «Прочие» — предметы вне сборок). Предметы, которых нет
+  в сборках, получают вердикт «Нет данных»: программа подскажет размер, но ценность оцените сами.
 - Экономические предметы (Loupe, Rewards Card, ATM, Cash Register) взяты из старых гайдов — проверяйте актуальность.
 - Картинки предметов подгружаются с CDN Mobalytics и в репозитории не хранятся.
 - Шрифты Philosopher и Alegreya Sans лежат в `fonts/` (лицензия SIL OFL 1.1, тексты лицензий рядом),
