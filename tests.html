@@ -174,6 +174,11 @@ document.getElementById('app').addEventListener('load', () => {
     // Подсказки
     check('Подсказка сменить направление (день 7, цель < 30%)',
       hintText({ day: 7, target: 'private_hot_springs', board: ["Pyg's Gym"] }).includes('смене направления'));
+    a = advise({ day: 7, target: 'vineyard', board: ["Pyg's Gym", 'Tusked Helm', 'Haladie'] }, 'Wrist Warrior');
+    eq('После подсказки сменить направление штрафа «не ваша цель» нет: 0.75 × (0.5 + 0.7 × 5/9) → 67', a.score, 67);
+    check('Причина «штраф снят»', a.reasons.some(r => r.includes('штраф снят')));
+    a = advise({ day: 6, target: 'vineyard', board: ["Pyg's Gym", 'Tusked Helm', 'Haladie'] }, 'Wrist Warrior');
+    eq('До 7-го дня штраф «не ваша цель» остаётся → 40', a.score, 40);
     check('Нет подсказки сменить направление на дне 6',
       !hintText({ day: 6, target: 'private_hot_springs', board: ["Pyg's Gym"] }).includes('смене направления'));
     check('Предупреждение о переполнении доски',

@@ -1168,11 +1168,21 @@ function matches(run) {
   return res.sort((x, y) => y.progress - x.progress);
 }
 
+// Если цель на 7-й день и позже собрана меньше чем на 30%, а другая сборка ближе, —
+// советуем сменить направление. Возвращает эту сборку или null.
+function switchSuggestion(run, ms = matches(run)) {
+  if (!run.target || run.day < 7 || !ms.length) return null;
+  const top = ms[0], tgt = ms.find(m => m.id === run.target);
+  return tgt && tgt.progress < 0.3 && top.id !== tgt.id && top.progress > tgt.progress ? top : null;
+}
+
 function advise(run, name, price) {
   const idx = itemIndex(), eco = ecoIndex();
   const n = norm(name);
   const owned = ownedSet(run);
-  const progress = Object.fromEntries(matches(run).map(m => [m.id, m.progress]));
+  const ms = matches(run);
+  const progress = Object.fromEntries(ms.map(m => [m.id, m.progress]));
+  const switchTo = switchSuggestion(run, ms);
   const reasons = [];
   let best;
 
@@ -1187,7 +1197,8 @@ function advise(run, name, price) {
       let r = `${a.name}: ${ROLE_LABEL[it.role] || it.role}, сборка собрана на ${Math.round(prog * 100)}%`;
       if (a.tier === 'offmeta') { v *= 0.9; r += ' (вне меты)'; }
       if (a.late && run.day <= 4) { v *= 0.8; r += '; поздняя сборка — в начале забега рано'; }
-      if (run.target && a.id !== run.target) { v *= 0.6; r += ' (не ваша цель)'; }
+      if (switchTo && a.id === switchTo.id) r += ' (ближе вашей цели — штраф снят)';
+      else if (run.target && a.id !== run.target) { v *= 0.6; r += ' (не ваша цель)'; }
       if (run.day >= 9 && prog < 0.25) { v *= 0.75; r += '; поздно начинать с нуля'; }
       if (it.replaces && owned.has(norm(it.replaces))) { v *= 0.5; r += `; ${it.replaces} уже есть — замена не нужна`; }
       if (it.note_ru) r += `; ${it.note_ru}`;
@@ -1235,8 +1246,8 @@ function hints(run) {
   const missText = m => m.miss.length ? m.miss.join(', ') : 'ничего — сборка собрана';
   if (run.target) {
     const tgt = ms.find(m => m.id === run.target);
-    if (tgt && run.day >= 7 && tgt.progress < 0.3 && top.id !== tgt.id && top.progress > tgt.progress) {
-      h.push({ warn: true, text: `Цель «${tgt.name}» собрана на ${Math.round(tgt.progress * 100)}%. «${top.name}» ближе (${Math.round(top.progress * 100)}%) — подумайте о смене направления.` });
+    if (switchSuggestion(run, ms)) {
+      h.push({ warn: true, text: `Цель «${tgt.name}» собрана на ${Math.round(tgt.progress * 100)}%. «${top.name}» ближе (${Math.round(top.progress * 100)}%) — подумайте о смене направления. Предметы «${top.name}» уже оцениваются без штрафа за чужую цель.` });
     } else if (tgt) {
       h.push({ text: `Цель «${tgt.name}»: ${Math.round(tgt.progress * 100)}%. Не хватает: ${missText(tgt)}.` });
     }
