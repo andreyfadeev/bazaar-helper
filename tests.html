@@ -144,13 +144,17 @@ document.getElementById('app').addEventListener('load', () => {
     multi.heroes.Pygmalien.archetypes[0].items.push({ name: 'Shared Thing', size: 'S', role: 'key' });
     multi.heroes.Pygmalien.archetypes[1].items.push({ name: 'Shared Thing', size: 'S', role: 'key' });
     a = advise({ day: 1 }, 'Shared Thing', null, multi);
-    eq('Предмет в двух сборках: +0.05 → 50', a.score, 50);
-    check('Причина «несколько сборок»', a.reasons.some(r => r.includes('несколько сборок')));
+    eq('Предмет в двух не начатых сборках: бонуса нет → 45', a.score, 45);
+    a = advise({ day: 5, board: ["Pyg's Gym", 'Vineyard'] }, 'Shared Thing', null, multi);
+    eq('Предмет в двух начатых сборках: 0.55 + 0.05 → 60', a.score, 60);
+    check('Причина «несколько начатых сборок»', a.reasons.some(r => r.includes('несколько начатых сборок')));
 
     // Сборки вне меты
     near('Square без ядра: Dog = 1/7', progress({ board: ['Dog'] }, 'square'), 1 / 7);
     a = advise({ day: 1 }, 'Belt');
-    eq('Belt в 4 сборках, день 1: 0.45 + 3 × 0.05 → 60', a.score, 60);
+    eq('Belt в 4 не начатых сборках, день 1: без бонуса → 45', a.score, 45);
+    a = advise({ day: 5, stash: ['Double Whammy', 'Riceballer', 'Money Furnace', 'Dog'] }, 'Belt');
+    check('Belt в 4 начатых сборках: бонус не больше +0.10 → 65', a.score === 65 || a.score === 64, `получено ${a.score}`);
     check('В начале забега подсказка про ядро — только мета-сборки', (() => {
       const t = hintText({ day: 5 });
       return t.includes("Pyg's Gym") && !t.includes('Double Whammy');

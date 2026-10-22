@@ -1190,9 +1190,12 @@ function advise(run, name, price) {
       reasons.push(r);
       best = Math.max(best, Math.min(v, 1));
     }
-    if (archs.size > 1) {
-      best += 0.05 * (archs.size - 1);
-      reasons.push('Подходит сразу в несколько сборок');
+    // Бонус только за уже начатые сборки и не больше +0.10: иначе универсальные
+    // предметы вроде Belt обгоняют ядра меты на пустой доске
+    const started = [...archs].filter(id => (progress[id] || 0) > 0).length;
+    if (started > 1) {
+      best += Math.min(0.10, 0.05 * (started - 1));
+      reasons.push('Подходит сразу в несколько начатых сборок');
     }
   } else if (eco.has(n)) {
     best = run.day <= 4 ? 0.6 : run.day <= 7 ? 0.45 : 0.25;
