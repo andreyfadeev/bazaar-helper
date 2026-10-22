@@ -1213,7 +1213,8 @@ function advise(run, name, price) {
       reasons.push('Подходит сразу в несколько начатых сборок');
     }
   } else if (eco.has(n)) {
-    best = run.day <= 4 ? 0.6 : run.day <= 7 ? 0.45 : 0.25;
+    // 0.5 в начале — наравне с ядром не начатой сборки, чтобы экономика не обгоняла мету
+    best = run.day <= 4 ? 0.5 : run.day <= 7 ? 0.45 : 0.25;
     reasons.push(eco.get(n).note_ru || 'Экономика');
     if (run.day > 7) reasons.push('Экономика к концу забега ценится меньше');
   } else {

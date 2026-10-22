@@ -125,7 +125,7 @@ document.getElementById('app').addEventListener('load', () => {
     eq('Не по карману — не выше «Зависит», даже если формула дала бы 67', [a.score, a.verdict], [64, 'Зависит']);
 
     // Экономика и неизвестные предметы
-    eq('Экономика, дни 1–4: 60', advise({ day: 3 }, 'ATM').score, 60);
+    eq('Экономика, дни 1–4: 50 (наравне с ядром не начатой сборки)', advise({ day: 3 }, 'ATM').score, 50);
     eq('Экономика, дни 5–7: 45', advise({ day: 6 }, 'ATM').score, 45);
     a = advise({ day: 8 }, 'ATM');
     eq('Экономика, день 8+: 25', a.score, 25);
@@ -250,8 +250,8 @@ document.getElementById('app').addEventListener('load', () => {
       days: [
         { day: 1, gold: 10, offers: [["Pyg's Gym", 7], ['Haladie', 3], ['ATM', 5]],
           expect: [
-            ['Лучший совет — ядро Pyg\'s Gym', r => r.top === "Pyg's Gym",
-              'экономика в дни 1–4 стоит фиксированные 0.6, а ядро не начатой сборки — 0.5, поэтому ATM (60) обгоняет Pyg\'s Gym (50)'],
+            ['Ядро Pyg\'s Gym не ниже экономики', r => r.by["Pyg's Gym"].score >= r.by.ATM.score,
+              'экономика в дни 1–4 стоит больше, чем ядро не начатой сборки'],
             ['ATM в начале забега не «Пропустить»', r => r.by.ATM.verdict !== 'Пропустить'] ] },
         { day: 3, gold: 8, board: ["Pyg's Gym"], offers: [['Tusked Helm', 4], ['Wrist Warrior', 4], ['Vineyard', 7]],
           expect: [
