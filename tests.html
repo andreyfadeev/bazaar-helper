@@ -139,6 +139,13 @@ document.getElementById('app').addEventListener('load', () => {
     check('Неизвестный: «оцените сами»', a.reasons.some(r => r.includes('оцените сами')));
     eq('Регистр и пробелы в названии не важны', advise({ day: 1 }, '  pyg\'s   GYM ').score, 50);
 
+    // Замена при уже имеющемся основном предмете
+    a = advise({ day: 5, board: ["Pyg's Gym"] }, 'Jabalian Drum');
+    eq('Jabalian Drum при Pyg\'s Gym на доске: 0.7 × (0.5 + 0.7/3) × 0.5 → 26', a.score, 26);
+    check('Причина «замена не нужна»', a.reasons.some(r => r.includes('замена не нужна')));
+    a = advise({ day: 5 }, 'Jabalian Drum');
+    eq('Jabalian Drum без Pyg\'s Gym — без штрафа: 0.7 × 0.5 → 35', a.score, 35);
+
     // Бонус за несколько архетипов — на своих данных
     const multi = JSON.parse(JSON.stringify(DEFAULT_DATA));
     multi.heroes.Pygmalien.archetypes[0].items.push({ name: 'Shared Thing', size: 'S', role: 'key' });

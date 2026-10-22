@@ -1189,6 +1189,7 @@ function advise(run, name, price) {
       if (a.late && run.day <= 4) { v *= 0.8; r += '; поздняя сборка — в начале забега рано'; }
       if (run.target && a.id !== run.target) { v *= 0.6; r += ' (не ваша цель)'; }
       if (run.day >= 9 && prog < 0.25) { v *= 0.75; r += '; поздно начинать с нуля'; }
+      if (it.replaces && owned.has(norm(it.replaces))) { v *= 0.5; r += `; ${it.replaces} уже есть — замена не нужна`; }
       if (it.note_ru) r += `; ${it.note_ru}`;
       reasons.push(r);
       best = Math.max(best, Math.min(v, 1));
