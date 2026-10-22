@@ -84,6 +84,7 @@ document.getElementById('app').addEventListener('load', () => {
   const advise = (o, name, price = null, data = null) => ev('advise')(setRun(o, data), name, price);
   const progress = (o, id) => ev('matches')(setRun(o)).find(m => m.id === id).progress;
   const hintText = o => ev('hints')(setRun(o)).map(h => h.text).join(' | ');
+  const GYM_ALMOST = ["Pyg's Gym", 'Tusked Helm', 'Wrist Warrior', 'Haladie', 'Yo-Yo'];
 
   try {
     // Прогресс архетипа
@@ -120,6 +121,8 @@ document.getElementById('app').addEventListener('load', () => {
     eq('Цена больше золота × 0.85: 47', a.score, 47);
     a = advise({ day: 5, gold: 5, board: ["Pyg's Gym"] }, 'Haladie', 5);
     eq('Цена равна золоту — без штрафа: 55', a.score, 55);
+    a = advise({ day: 7, gold: 2, board: GYM_ALMOST }, 'Piggles Launcher', 6);
+    eq('Не по карману — не выше «Зависит», даже если формула дала бы 67', [a.score, a.verdict], [64, 'Зависит']);
 
     // Экономика и неизвестные предметы
     eq('Экономика, дни 1–4: 60', advise({ day: 3 }, 'ATM').score, 60);

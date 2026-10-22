@@ -1211,9 +1211,11 @@ function advise(run, name, price) {
   } else if (!eco.has(n)) {
     reasons.push('Размер неизвестен');
   }
-  if (price != null && price > run.gold) { best *= 0.85; reasons.push(`Не хватает золота (${price} > ${run.gold})`); }
+  const cantAfford = price != null && price > run.gold;
+  if (cantAfford) { best *= 0.85; reasons.push(`Не хватает золота (${price} > ${run.gold}) — сейчас не купить`); }
 
-  const score = Math.max(0, Math.min(100, Math.round(best * 100)));
+  let score = Math.max(0, Math.min(100, Math.round(best * 100)));
+  if (cantAfford) score = Math.min(score, 64); // не по карману — не выше «Зависит»
   const verdict = score >= 65 ? TAKE : score >= 40 ? MAYBE : SKIP;
   return { name, score, verdict, reasons };
 }
