@@ -55,7 +55,7 @@ iframe { display: none; }
   <p class="muted">Несколько «забегов» по дням: что предлагает торговец и что советует помощник. ⚠ — совет, который выглядит странно для игрока; это не ошибка кода, а повод обсудить формулы.</p>
   <div id="scenarios"></div>
 </main>
-<iframe id="app" src="index.html?nostore" title="Приложение для тестов"></iframe>
+<iframe id="app" title="Приложение для тестов"></iframe>
 <script>
 'use strict';
 const results = [];
@@ -360,6 +360,9 @@ document.getElementById('app').addEventListener('load', () => {
     `<li class="${r.ok ? 'ok' : 'fail'}">${r.ok ? '✓' : '✗'} ${escapeHtml(r.name)}${r.ok ? '' : `<br><span class="muted">${escapeHtml(r.detail)}</span>`}</li>`).join('');
   document.title = (failed.length ? '✗ ' : '✓ ') + document.title;
 });
+
+// Метка времени — чтобы фрейм не взял из кэша старую версию приложения
+document.getElementById('app').src = 'index.html?nostore&t=' + Date.now();
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
