@@ -30,6 +30,18 @@ li { padding: 4px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhe
 li.ok::marker { color: var(--jade); }
 li.fail { color: var(--madder); }
 .muted { color: var(--muted); font-size: .9rem; }
+.scenario { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 12px 14px; margin: 14px 0; }
+.scenario h2 { font-size: 1.15rem; margin: 0 0 2px; }
+.day { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 10px; }
+.day h3 { font-size: 1rem; margin: 0; }
+.day p { margin: 2px 0 6px; }
+.day table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+.day th, .day td { text-align: left; padding: 3px 8px; border-bottom: 1px solid var(--line); }
+.expect { list-style: none; padding: 0; margin: 8px 0 0; }
+.expect li { border: 0; padding: 2px 0; }
+.expect li.ok { color: var(--jade); }
+.expect li.odd { color: var(--saffron); font-weight: 600; }
+.expect li.odd .muted { font-weight: 400; }
 iframe { display: none; }
 </style>
 </head>
@@ -39,6 +51,9 @@ iframe { display: none; }
   <p class="muted">Загружает <code>index.html?nostore</code> в скрытый фрейм и проверяет формулы из ТЗ. Сохранённый забег в этом браузере не затрагивается.</p>
   <div id="summary" class="summary" role="status">Выполняется…</div>
   <ol id="list"></ol>
+  <h1 style="margin-top:28px">Сценарии забегов</h1>
+  <p class="muted">Несколько «забегов» по дням: что предлагает торговец и что советует помощник. ⚠ — совет, который выглядит странно для игрока; это не ошибка кода, а повод обсудить формулы.</p>
+  <div id="scenarios"></div>
 </main>
 <iframe id="app" src="index.html?nostore" title="Приложение для тестов"></iframe>
 <script>
@@ -183,11 +198,146 @@ document.getElementById('app').addEventListener('load', () => {
     check('Тесты упали с ошибкой', false, String(err && err.stack || err));
   }
 
+  // ---------- Сценарии забегов ----------
+  // Ожидания записаны так, как рассуждал бы игрок. Невыполненное ожидание — не ошибка кода,
+  // а «странный» совет (⚠): формулы из ТЗ работают как задумано, но результат стоит обсудить.
+  const P = n => n; // для читаемости списков предметов
+  const GYM7 = ["Pyg's Gym", 'Tusked Helm', 'Wrist Warrior', 'Haladie', 'Yo-Yo'];
+  const SCENARIOS = [
+    {
+      title: "1. Pyg's Gym по учебнику",
+      about: 'Игрок с первого дня идёт в мету и собирает Pyg\'s Gym до конца.',
+      days: [
+        { day: 1, gold: 10, offers: [["Pyg's Gym", 7], ['Haladie', 3], ['ATM', 5]],
+          expect: [
+            ['Лучший совет — ядро Pyg\'s Gym', r => r.top === "Pyg's Gym",
+              'экономика в дни 1–4 стоит фиксированные 0.6, а ядро не начатой сборки — 0.5, поэтому ATM (60) обгоняет Pyg\'s Gym (50)'],
+            ['ATM в начале забега не «Пропустить»', r => r.by.ATM.verdict !== 'Пропустить'] ] },
+        { day: 3, gold: 8, board: ["Pyg's Gym"], offers: [['Tusked Helm', 4], ['Wrist Warrior', 4], ['Vineyard', 7]],
+          expect: [
+            ['Ключевой предмет начатой сборки выше чужого ядра', r => r.by['Tusked Helm'].score > r.by.Vineyard.score] ] },
+        { day: 6, gold: 12, board: ["Pyg's Gym", 'Tusked Helm', 'Wrist Warrior', 'Haladie'], offers: [['Piggles Launcher', 6], ['Yo-Yo', 3], ['Igloo', 8]],
+          expect: [
+            ['Недостающие ключевые — «Брать»', r => r.by['Piggles Launcher'].verdict === 'Брать' && r.by['Yo-Yo'].verdict === 'Брать'],
+            ['Ядро чужой сборки на 6-й день — не «Брать»', r => r.by.Igloo.verdict !== 'Брать'] ] },
+        { day: 9, gold: 15, board: ["Pyg's Gym", 'Tusked Helm', 'Wrist Warrior', 'Haladie', 'Piggles Launcher', 'Yo-Yo'],
+          offers: [['Dragon Tooth', 5], ['Haladie', 3], ['Fort', 9]],
+          expect: [
+            ['Последний ключевой (влезает в 1 слот) — «Брать»', r => r.by['Dragon Tooth'].verdict === 'Брать'],
+            ['Второй Haladie — не «Брать»', r => r.by.Haladie.verdict !== 'Брать'],
+            ['Fort на 9-й день без сборки — «Пропустить»', r => r.by.Fort.verdict === 'Пропустить'] ] }
+      ]
+    },
+    {
+      title: '2. Универсальные предметы в начале',
+      about: 'Пустая доска, у торговца предметы, которые входят сразу в несколько сборок вне меты.',
+      days: [
+        { day: 1, gold: 10, offers: [['Belt', 5], ["Pyg's Gym", 7], ['Vineyard', 7], ['Haladie', 3]],
+          expect: [
+            ['Ядро мета-сборки не ниже Belt', r => r.by["Pyg's Gym"].score >= r.by.Belt.score,
+              'Belt — поддержка в 4 сборках вне меты, ни одна не начата, но бонус +0.05 за каждую лишнюю сборку поднимает его выше ядер меты'] ] },
+        { day: 2, gold: 10, offers: [['Gramophone', 5], ['Tusked Helm', 3]],
+          expect: [
+            ['Ключевой мета-предмет не ниже Gramophone', r => r.by['Tusked Helm'].score >= r.by.Gramophone.score,
+              'та же причина: Gramophone в 4 сборках вне меты'] ] }
+      ]
+    },
+    {
+      title: '3. Мета против сборки вне меты',
+      about: 'В начале забега у торговца два ядра: мета-сборки и поздней сборки вне меты.',
+      days: [
+        { day: 2, gold: 10, offers: [['Double Whammy', 8], ["Pyg's Gym", 7]],
+          expect: [
+            ["Pyg's Gym выше Double Whammy", r => r.by["Pyg's Gym"].score > r.by['Double Whammy'].score,
+              'у ядер одинаковая оценка: формула не различает мету и сборки вне меты, а гайд прямо называет Double Whammy поздней сборкой'] ] },
+        { day: 3, gold: 10, offers: [['Yetarian Club', 8], ['Vineyard', 7]],
+          expect: [
+            ['Ядро меты выше ядра из гайда 2025 года', r => r.by.Vineyard.score > r.by['Yetarian Club'].score,
+              'Yetarian Club ещё и ключевой во Freeze, и бонус за вторую сборку (+0.05) ставит его выше Vineyard; возраст гайда в оценке не участвует'] ] }
+      ]
+    },
+    {
+      title: '4. Не хватает золота',
+      about: 'Сборка почти собрана, но у торговца нужный предмет дороже, чем есть золота.',
+      days: [
+        { day: 7, gold: 2, board: GYM7, offers: [['Piggles Launcher', 6]],
+          expect: [
+            ['Недоступный по цене предмет — не «Брать»', r => r.by['Piggles Launcher'].verdict !== 'Брать',
+              'штраф за цену всего × 0.85: предмет за 6 золота при 2 на руках остаётся «Брать»'] ] },
+        { day: 7, gold: 6, board: GYM7, offers: [['Piggles Launcher', 6]],
+          expect: [['Хватает золота — «Брать»', r => r.by['Piggles Launcher'].verdict === 'Брать']] }
+      ]
+    },
+    {
+      title: '5. Цель не собирается',
+      about: 'Цель — Vineyard, но приходят только предметы Pyg\'s Gym.',
+      days: [
+        { day: 4, gold: 10, target: 'vineyard', board: ["Pyg's Gym"], offers: [['Golf Clubs', 5], ['Tusked Helm', 4]],
+          expect: [['Предмет цели выше предмета чужой сборки', r => r.by['Golf Clubs'].score > r.by['Tusked Helm'].score]] },
+        { day: 7, gold: 10, target: 'vineyard', board: ["Pyg's Gym", 'Tusked Helm', 'Haladie'], offers: [['Golf Clubs', 5], ['Wrist Warrior', 4]],
+          expect: [
+            ['Есть подсказка сменить направление', r => r.hints.includes('смене направления')],
+            ['После подсказки сменить направление предмет Pyg\'s Gym явно выше', r => r.by['Wrist Warrior'].score - r.by['Golf Clubs'].score >= 10,
+              'подсказка советует сменить сборку, но штраф «не ваша цель» × 0.6 продолжает топить Pyg\'s Gym: разница в оценках всего пара баллов'] ] }
+      ]
+    },
+    {
+      title: '6. Сборка собрана, доска полная',
+      about: 'Поздний забег: Pyg\'s Gym собран полностью, доска занята на все 10 слотов.',
+      days: [
+        { day: 11, gold: 20, board: ["Pyg's Gym", 'Piggles Launcher', 'Tusked Helm', 'Wrist Warrior', 'Haladie', 'Yo-Yo', 'Dragon Tooth'],
+          offers: [['Jabalian Drum', 8], ['Fort', 9], ['ATM', 4]],
+          expect: [
+            ['Ничего не «Брать»: всё собрано и места нет', r => r.list.every(a => a.verdict !== 'Брать'),
+              'Jabalian Drum — запасной вариант вместо Pyg\'s Gym, который уже стоит на доске, но он получает «Брать» за счёт прогресса сборки'] ] }
+      ]
+    },
+    {
+      title: '7. Заморозка: мета и вне меты пересекаются',
+      about: 'Начат Private Hot Springs, у торговца ключевые меты и ядро Freeze (Igloo).',
+      days: [
+        { day: 5, gold: 12, board: ['Private Hot Springs', 'Cold Room'], offers: [['Ice Cream Truck', 8], ['Snow Globe', 5], ['Igloo', 8]],
+          expect: [
+            ['Ключевые меты не ниже Igloo', r => r.by['Ice Cream Truck'].score >= r.by.Igloo.score && r.by['Snow Globe'].score >= r.by.Igloo.score],
+            ['Igloo хотя бы «Зависит»: сборки пересекаются', r => r.by.Igloo.verdict !== 'Пропустить'] ] }
+      ]
+    }
+  ];
+
+  const scen = { total: 0, odd: [] };
+  const scenHTML = SCENARIOS.map(sc => {
+    const daysHTML = sc.days.map(d => {
+      const run = setRun({ day: d.day, gold: d.gold, target: d.target || '', board: d.board || [], stash: d.stash || [] });
+      const list = d.offers.map(([n, price]) => Object.assign(ev('advise')(run, n, price), { price }))
+        .sort((x, y) => y.score - x.score);
+      const r = { list, top: list[0].name, by: Object.fromEntries(list.map(a => [a.name, a])),
+        hints: ev('hints')(run).map(h => h.text).join(' ') };
+      const exp = d.expect.map(([text, fn, why]) => {
+        const ok = !!fn(r);
+        scen.total++;
+        if (!ok) scen.odd.push({ scenario: sc.title, day: d.day, text, why });
+        return `<li class="${ok ? 'ok' : 'odd'}">${ok ? '✓' : '⚠'} ${escapeHtml(text)}${!ok && why ? `<br><span class="muted">${escapeHtml(why)}</span>` : ''}</li>`;
+      }).join('');
+      const state = [`золото ${d.gold}`, d.target ? `цель ${d.target}` : '',
+        (d.board || []).length ? `доска: ${d.board.join(', ')}` : 'доска пустая'].filter(Boolean).join(' · ');
+      return `<div class="day"><h3>День ${d.day}</h3><p class="muted">${escapeHtml(state)}</p>
+        <table><thead><tr><th>У торговца</th><th>Цена</th><th>Оценка</th><th>Вердикт</th></tr></thead><tbody>
+        ${list.map(a => `<tr><td>${escapeHtml(a.name)}</td><td>${a.price ?? '—'}</td><td>${a.unknown ? '—' : a.score}</td><td>${escapeHtml(a.verdict)}</td></tr>`).join('')}
+        </tbody></table>
+        ${r.hints ? `<p class="muted">Подсказка: ${escapeHtml(r.hints)}</p>` : ''}
+        <ul class="expect">${exp}</ul></div>`;
+    }).join('');
+    return `<section class="scenario"><h2>${escapeHtml(sc.title)}</h2><p class="muted">${escapeHtml(sc.about)}</p>${daysHTML}</section>`;
+  }).join('');
+  document.getElementById('scenarios').innerHTML = scenHTML;
+  window.__scenarioReport = scen; // для просмотра из консоли
+
   check('localStorage не изменён тестами', localStorage.getItem('bazaarHelper.v2') === storedBefore);
 
   const failed = results.filter(r => !r.ok);
   const sum = document.getElementById('summary');
-  sum.textContent = failed.length ? `Провалено: ${failed.length} из ${results.length}` : `Все проверки пройдены: ${results.length}`;
+  sum.textContent = (failed.length ? `Провалено: ${failed.length} из ${results.length}` : `Все проверки пройдены: ${results.length}`) +
+    ` · сценарии: ${scen.total - scen.odd.length} из ${scen.total} ожиданий, странных советов: ${scen.odd.length}`;
   sum.className = 'summary ' + (failed.length ? 'fail' : 'ok');
   document.getElementById('list').innerHTML = results.map(r =>
     `<li class="${r.ok ? 'ok' : 'fail'}">${r.ok ? '✓' : '✗'} ${escapeHtml(r.name)}${r.ok ? '' : `<br><span class="muted">${escapeHtml(r.detail)}</span>`}</li>`).join('');
